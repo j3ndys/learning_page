@@ -608,6 +608,16 @@ const TOPICS = {
     },
     defaultLevel:'intro',
   },
+  brackets: {
+    label:'Závorky', emoji:'🔣', color:'#e67e22',
+    levels:{
+      'add-sub':   {label:'Sčítání a odčítání (do 100)',  ops:['+','−'], max:100},
+      'with-mul':  {label:'S násobením (do 100)',          ops:['+','−','×'], max:100},
+      'nested':    {label:'Vnořené závorky (do 100)',      ops:['+','−','×'], max:100, nested:true},
+      'large':     {label:'Velká čísla (do 1000)',         ops:['+','−','×'], max:1000},
+    },
+    defaultLevel:'add-sub',
+  },
 };
 
 const GRADE_COLORS = {
@@ -888,6 +898,81 @@ const GEN={
       expression:`${a.toFixed(1)} + ${b.toFixed(1)}`,
       answer:ans,operands:[a,b],visual:null,
       hint:`Sečti celé části, pak desetiny.`};
+  },
+
+  brackets(t){
+    const lvl = TOPICS.brackets.levels[t.level] || TOPICS.brackets.levels['add-sub'];
+    const {ops, max, nested} = lvl;
+
+    // Pomocné funkce
+    const opSym = op => op === '×' ? '×' : op;
+    const calc  = (a, op, b) => op==='+' ? a+b : op==='−' ? a-b : a*b;
+
+    // Generuj dvojici čísel tak aby výsledek byl kladný a v rozsahu
+    function genPair(maxVal, op) {
+      let a, b, att = 0;
+      do {
+        if (op === '×') {
+          a = ri(2, Math.min(12, Math.floor(Math.sqrt(maxVal))));
+          b = ri(2, Math.min(12, Math.floor(maxVal / a)));
+        } else {
+          a = ri(1, maxVal);
+          b = ri(1, op === '−' ? a : maxVal - a);
+        }
+        att++;
+      } while (calc(a, op, b) <= 0 && att < 100);
+      return [a, b];
+    }
+
+    if (nested) {
+      // Forma: (a OP1 b) OP2 (c OP3 d)
+      const op1 = ops[rnd(ops.length)];
+      const op2 = ops[rnd(ops.length)];
+      const op3 = ops[rnd(ops.length)];
+      const [a, b] = genPair(Math.floor(max / 4), op1);
+      const inner1 = calc(a, op1, b);
+      const [c, d] = genPair(Math.floor(max / 4), op3);
+      const inner2 = calc(c, op3, d);
+      if (inner1 <= 0 || inner2 <= 0) return null;
+      const answer = calc(inner1, op2, inner2);
+      if (answer <= 0 || answer > max) return null;
+      const expression = `(${a} ${opSym(op1)} ${b}) ${opSym(op2)} (${c} ${opSym(op3)} ${d})`;
+      const hint = `Nejdřív spočítej závorky: (${a} ${opSym(op1)} ${b}) = ${inner1}, (${c} ${opSym(op3)} ${d}) = ${inner2}`;
+      return {topic:'brackets', type:'numeric', expression, answer,
+        visual:null, hint};
+    } else {
+      // Forma: a OP1 (b OP2 c)  nebo  (a OP1 b) OP2 c
+      const leftBracket = Math.random() < 0.5;
+      const op1 = ops[rnd(ops.length)];
+      const op2 = ops[rnd(ops.length)];
+
+      if (leftBracket) {
+        // (a OP1 b) OP2 c
+        const [a, b] = genPair(Math.floor(max / 3), op1);
+        const inner = calc(a, op1, b);
+        if (inner <= 0) return null;
+        const [, c] = genPair(Math.min(inner, Math.floor(max / 3)), op2);
+        const answer = calc(inner, op2, c);
+        if (answer <= 0 || answer > max) return null;
+        const expression = `(${a} ${opSym(op1)} ${b}) ${opSym(op2)} ${c}`;
+        const hint = `Nejdřív závorku: ${a} ${opSym(op1)} ${b} = ${inner}, pak ${inner} ${opSym(op2)} ${c}`;
+        return {topic:'brackets', type:'numeric', expression, answer,
+          visual:null, hint};
+      } else {
+        // a OP1 (b OP2 c)
+        const [b, c] = genPair(Math.floor(max / 3), op2);
+        const inner = calc(b, op2, c);
+        if (inner <= 0) return null;
+        const [a, ] = genPair(Math.min(inner, Math.floor(max / 3)), op1);
+        // Ensure a OP1 inner stays positive
+        const answer = calc(a, op1, inner);
+        if (answer <= 0 || answer > max) return null;
+        const expression = `${a} ${opSym(op1)} (${b} ${opSym(op2)} ${c})`;
+        const hint = `Nejdřív závorku: ${b} ${opSym(op2)} ${c} = ${inner}, pak ${a} ${opSym(op1)} ${inner}`;
+        return {topic:'brackets', type:'numeric', expression, answer,
+          visual:null, hint};
+      }
+    }
   },
 };
 
