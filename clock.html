@@ -10,201 +10,19 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Hodiny">
 <meta name="theme-color" content="#1a2340">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
 <style>
 /* ══════════════════════════════════════════════════════
-   DESIGN SYSTÉM — Učíme se číst čas
+   clock.html — specifické styly
+   Sdílené proměnné, reset, topbar, tabs, settings, feedback
+   jsou definovány v shared.css.
    ══════════════════════════════════════════════════════ */
-:root {
-  --H:   #e05c6a;   /* hodiny / červená  */
-  --M:   #4a90d9;   /* minuty / modrá    */
-  --ok:  #5cb85c;
-  --warn:#ffb347;
-
-  --bg:    #f5f7fb;
-  --card:  #ffffff;
-  --side:  #f0f4fc;
-  --brd:   #dde4f0;
-  --txt:   #2d3a52;
-  --mut:   #7a88a8;
-
-  --r:  14px;
-  --sh: 0 2px 16px rgba(74,100,180,.10);
-  --fh: 'Baloo 2', cursive;
-  --fb: 'Nunito', sans-serif;
-}
-
-/* ── RESET ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100dvh; overflow: hidden; }
-body {
-  font-family: var(--fb);
-  color: var(--txt);
-  background: var(--bg);
-  display: flex;
-  flex-direction: column;
-  user-select: none;
-  -webkit-user-select: none;
-}
-button, select, input { font-family: inherit; touch-action: manipulation; }
 
 /* ══════════════════════════════════════════════════════
-   TOPBAR
-   ══════════════════════════════════════════════════════ */
-.topbar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 14px;
-  height: 48px;
-  background: var(--card);
-  border-bottom: 1px solid var(--brd);
-  box-shadow: var(--sh);
-}
-.topbar-logo {
-  font-family: var(--fh);
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--H);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex: 1;
-}
-.topbar-logo span { color: var(--M); }
-
-.stars-pill {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: #fff8e7;
-  border: 1.5px solid #ffcc66;
-  border-radius: 50px;
-  padding: 3px 10px;
-  font-size: .82rem;
-  font-weight: 800;
-  color: #b8860b;
-}
-
-.tbtn {
-  border: 1.5px solid var(--brd);
-  background: var(--side);
-  border-radius: 50px;
-  padding: 4px 11px;
-  font-size: .78rem;
-  font-weight: 700;
-  color: var(--mut);
-  cursor: pointer;
-  transition: all .15s;
-  white-space: nowrap;
-}
-.tbtn:hover { border-color: var(--M); color: var(--M); background: #e8f0ff; }
-
-.btn-back {
-  font-size: .78rem; font-weight: 700;
-  color: var(--mut); text-decoration: none;
-  padding: 4px 11px;
-  border: 1.5px solid var(--brd);
-  border-radius: 50px;
-  background: var(--side);
-  transition: all .15s;
-  display: inline-flex; align-items: center;
-  white-space: nowrap;
-}
-.btn-back:hover { border-color: var(--M); color: var(--M); }
-
-/* ══════════════════════════════════════════════════════
-   SETTINGS PANEL (collapsible)
-   ══════════════════════════════════════════════════════ */
-#set-wrap {
-  flex-shrink: 0;
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height .28s ease;
-  background: #fffbf0;
-  border-bottom: 1.5px solid #ffe0a0;
-}
-#set-wrap.open { max-height: 180px; }
-.set-inner {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 20px;
-  align-items: center;
-  padding: 8px 14px;
-}
-.set-row { display: flex; align-items: center; gap: 7px; }
-.set-row label { font-size: .8rem; font-weight: 700; cursor: pointer; }
-.sw { position: relative; display: inline-block; width: 40px; height: 22px; }
-.sw input { opacity: 0; width: 0; height: 0; }
-.sw-sl { position: absolute; cursor: pointer; inset: 0; background: #ccd; border-radius: 50px; transition: .25s; }
-.sw-sl::before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .25s; }
-input:checked + .sw-sl { background: var(--M); }
-input:checked + .sw-sl::before { transform: translateX(18px); }
-.set-num { display: flex; align-items: center; gap: 4px; }
-.set-num button {
-  width: 24px; height: 24px;
-  border: 1.5px solid var(--brd); border-radius: 8px;
-  background: white; color: var(--txt); font-size: .95rem; font-weight: 900;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-.set-num button:hover { background: var(--M); color: #fff; border-color: var(--M); }
-.set-num span { min-width: 24px; text-align: center; font-weight: 800; font-size: .88rem; }
-
-/* ══════════════════════════════════════════════════════
-   TABS
-   ══════════════════════════════════════════════════════ */
-.tabs {
-  flex-shrink: 0;
-  display: flex;
-  gap: 4px;
-  padding: 7px 14px 0;
-  background: var(--card);
-  border-bottom: 2px solid var(--brd);
-}
-.tab {
-  font-family: var(--fh);
-  font-size: .9rem;
-  font-weight: 700;
-  padding: 6px 18px;
-  border-radius: var(--r) var(--r) 0 0;
-  border: 1.5px solid transparent;
-  border-bottom: none;
-  cursor: pointer;
-  background: transparent;
-  color: var(--mut);
-  transition: all .15s;
-  position: relative;
-  bottom: -2px;
-}
-.tab.on {
-  background: var(--bg);
-  border-color: var(--brd);
-  color: var(--txt);
-  border-bottom-color: var(--bg);
-}
-.tab:hover:not(.on) { color: var(--txt); background: #edf0ff; }
-
-/* ══════════════════════════════════════════════════════
-   MAIN AREA
-   ══════════════════════════════════════════════════════ */
-main {
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-}
-.mode { display: none; flex: 1 1 0; min-height: 0; flex-direction: column; }
-.mode.on { display: flex; }
-
-/* ══════════════════════════════════════════════════════
-   CLOCK PANEL — shared between all modes
-   The clock-frame fills its parent via position:absolute.
+   CLOCK PANEL — společné pro learn i practice
+   SVG vyplní celý .clk-frame přes position:absolute
    ══════════════════════════════════════════════════════ */
 .clk-panel {
-  /* Flex column: label (shrink) → clock frame (grow) → controls (shrink) */
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -220,10 +38,9 @@ main {
   flex-shrink: 0;
 }
 .clk-frame {
-  /* Takes remaining height — SVG fills via position:absolute */
   flex: 1 1 0;
   min-height: 0;
-  position: relative;
+  position: relative;      /* positioning context pro SVG */
 }
 .clk-frame svg {
   position: absolute;
@@ -234,7 +51,8 @@ main {
   touch-action: none;
   cursor: pointer;
 }
-/* hand control buttons */
+
+/* Tlačítka pro pohyb ručiček */
 .hand-ctrl {
   display: flex;
   flex-wrap: wrap;
@@ -263,8 +81,7 @@ main {
 .hc:active { transform: scale(.92); }
 
 /* ══════════════════════════════════════════════════════
-   LEARN MODE
-   Left ~62%: analog clock  |  Right ~38%: digital
+   VÝUKA — levý panel 62 % analogové | pravý 38 % digitální
    ══════════════════════════════════════════════════════ */
 .learn-layout {
   flex: 1 1 0;
@@ -272,7 +89,6 @@ main {
   display: flex;
   gap: 10px;
 }
-/* Analog side */
 .learn-analog {
   flex: 62 1 0;
   min-width: 0;
@@ -285,7 +101,6 @@ main {
   padding: 10px;
   gap: 6px;
 }
-/* Digital side */
 .learn-digital {
   flex: 38 1 0;
   min-width: 0;
@@ -300,7 +115,8 @@ main {
   box-shadow: var(--sh);
   padding: 16px 12px;
 }
-/* Dark digital display */
+
+/* Digitální displej (tmavý) */
 .dig-disp {
   display: flex;
   align-items: center;
@@ -317,9 +133,9 @@ main {
   border-radius: 7px;
   color: #7ab0f8;
   cursor: pointer;
-  width: clamp(32px,4.5vw,52px);
-  height: clamp(22px,2.8vh,34px);
-  font-size: clamp(.85rem,1.7vw,1.2rem);
+  width: clamp(32px, 4.5vw, 52px);
+  height: clamp(22px, 2.8vh, 34px);
+  font-size: clamp(.85rem, 1.7vw, 1.2rem);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -329,18 +145,18 @@ main {
 .db:active { transform: scale(.92); }
 .dv {
   font-family: 'Courier New', monospace;
-  font-size: clamp(2rem,5vw,4rem);
+  font-size: clamp(2rem, 5vw, 4rem);
   font-weight: 700;
-  min-width: clamp(40px,5.5vw,72px);
+  min-width: clamp(40px, 5.5vw, 72px);
   text-align: center;
   line-height: 1;
 }
 .dv.hv { color: var(--H); }
 .dv.mv { color: var(--M); }
-.dc { font-size: clamp(1.8rem,4.5vw,3.8rem); color: #6a88c0; font-weight: 900; align-self: center; padding-bottom: 4px; line-height: 1; }
+.dc { font-size: clamp(1.8rem, 4.5vw, 3.8rem); color: #6a88c0; font-weight: 900; align-self: center; padding-bottom: 4px; line-height: 1; }
 .time-pill {
   font-family: var(--fh);
-  font-size: clamp(.84rem,1.8vw,1.18rem);
+  font-size: clamp(.84rem, 1.8vw, 1.18rem);
   font-weight: 700;
   text-align: center;
   color: var(--txt);
@@ -354,7 +170,7 @@ main {
 }
 
 /* ══════════════════════════════════════════════════════
-   PRACTICE MODE
+   PROCVIČOVÁNÍ — layout
    ══════════════════════════════════════════════════════ */
 .prac-layout {
   flex: 1 1 0;
@@ -363,7 +179,6 @@ main {
   flex-direction: column;
   gap: 8px;
 }
-/* Toolbar */
 .prac-toolbar {
   flex-shrink: 0;
   display: flex;
@@ -402,8 +217,6 @@ main {
   box-shadow: 0 3px 12px rgba(74,144,217,.30);
 }
 .btn-newq:hover { filter: brightness(1.1); transform: translateY(-1px); }
-
-/* Practice content area */
 .prac-content {
   flex: 1 1 0;
   min-height: 0;
@@ -411,8 +224,7 @@ main {
   gap: 10px;
 }
 
-/* ── d2a layout ──
-   Sidebar (compact info) LEFT  |  Clock (dominant) RIGHT */
+/* d2a — digitální zadání vlevo, hodiny vpravo */
 .d2a-sidebar {
   flex: 0 0 auto;
   width: clamp(140px, 20vw, 200px);
@@ -440,10 +252,8 @@ main {
   gap: 6px;
 }
 
-/* ── a2d layout ──
-   Clock LEFT (square-ish)  |  Input RIGHT */
+/* a2d — hodiny vlevo, vstup vpravo */
 .a2d-clock {
-  /* Width tracks height so the clock is as square as possible */
   flex: 0 0 auto;
   width: min(50%, 50vh);
   display: flex;
@@ -471,17 +281,17 @@ main {
   overflow-y: auto;
 }
 
-/* ── Sidebar content ── */
+/* Prvky sidebaru */
 .task-label {
   font-family: var(--fh);
-  font-size: clamp(.78rem,1.8vw,1rem);
+  font-size: clamp(.78rem, 1.8vw, 1rem);
   font-weight: 700;
   color: var(--mut);
   text-align: center;
 }
 .task-time {
   font-family: 'Courier New', monospace;
-  font-size: clamp(1.8rem,4vw,2.8rem);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 900;
   color: var(--H);
   line-height: 1;
@@ -489,14 +299,14 @@ main {
 }
 .task-ampm {
   font-family: var(--fh);
-  font-size: clamp(.82rem,1.8vw,1.05rem);
+  font-size: clamp(.82rem, 1.8vw, 1.05rem);
   font-weight: 800;
   color: var(--M);
   text-align: center;
 }
 .task-desc {
   font-family: var(--fh);
-  font-size: clamp(.78rem,1.7vw,.98rem);
+  font-size: clamp(.78rem, 1.7vw, .98rem);
   font-weight: 700;
   color: var(--txt);
   background: var(--card);
@@ -511,18 +321,18 @@ main {
 }
 .prac-prompt {
   font-family: var(--fh);
-  font-size: clamp(.85rem,2vw,1.1rem);
+  font-size: clamp(.85rem, 2vw, 1.1rem);
   font-weight: 800;
   text-align: center;
   color: var(--txt);
 }
 
-/* Action buttons */
+/* Tlačítka akcí */
 .btn-chk {
   width: 100%;
   font-family: var(--fh);
   font-weight: 800;
-  font-size: clamp(.8rem,1.8vw,1rem);
+  font-size: clamp(.8rem, 1.8vw, 1rem);
   background: var(--ok);
   color: #fff;
   border: none;
@@ -547,38 +357,22 @@ main {
 }
 .btn-skip:hover { background: var(--warn); color: #fff; border-color: var(--warn); }
 
-/* Feedback */
-.fb-row {
-  flex-shrink: 0;
-  text-align: center;
-}
-.fb {
-  display: inline-block;
-  font-family: var(--fh);
-  font-size: .9rem;
-  font-weight: 800;
-  padding: 5px 14px;
-  border-radius: 9px;
-  min-height: 30px;
-  transition: all .25s;
-}
-.fb.ok  { background: #e6f9e6; color: #2e7d32; }
-.fb.err { background: #fff0f0; color: #c0392b; }
-.countdown { display: inline-block; background: rgba(0,0,0,.12); border-radius: 50px; padding: 1px 8px; font-size: .85em; margin-left: 6px; }
-
 /* ══════════════════════════════════════════════════════
-   DIGITAL INPUT WIDGET (a2d mode)
+   DIGITÁLNÍ VSTUP (bubnový výběr + numpad)
    ══════════════════════════════════════════════════════ */
 .diw { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.diw.with-numpad { flex-direction: row; align-items: flex-start; justify-content: center; gap: 16px; }
+.diw-left  { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+.diw-right { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
 .inp-hint { font-size: .72rem; font-weight: 700; color: var(--mut); display: flex; gap: 10px; }
 .sp-row { display: flex; align-items: center; gap: 5px; }
 .sgrp { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .sbtn {
-  width: clamp(36px,5.5vw,50px);
-  height: clamp(24px,3.2vh,34px);
+  width: clamp(36px, 5.5vw, 50px);
+  height: clamp(24px, 3.2vh, 34px);
   border: none;
   border-radius: 8px;
-  font-size: clamp(.85rem,1.8vw,1.1rem);
+  font-size: clamp(.85rem, 1.8vw, 1.1rem);
   font-weight: 900;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
@@ -590,22 +384,30 @@ main {
 .sbtn:active { transform: scale(.92); }
 .sdsp {
   font-family: 'Courier New', monospace;
-  font-size: clamp(1.5rem,3.5vw,2.2rem);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
   font-weight: 700;
-  min-width: clamp(50px,7vw,70px);
+  min-width: clamp(50px, 7vw, 70px);
   text-align: center;
   line-height: 1;
   background: #1a2340;
   border-radius: 9px;
-  padding: clamp(5px,.9vh,8px) 6px;
+  padding: clamp(5px, .9vh, 8px) 6px;
   border: 3px solid transparent;
   transition: border-color .15s;
   cursor: pointer;
+  position: relative;
 }
 .sdsp.hd { color: var(--H); border-color: #3d2020; }
 .sdsp.md { color: var(--M); border-color: #1a2d4a; }
 .sdsp.act { border-color: #fff !important; }
-.scol { font-size: clamp(1.5rem,3.5vw,2.2rem); font-weight: 900; color: #6a80b0; padding-bottom: 2px; }
+.sdsp::after {
+  content: '▾';
+  position: absolute;
+  bottom: -10px; left: 50%; transform: translateX(-50%);
+  font-size: .65rem; color: rgba(255,255,255,.30); line-height: 1;
+}
+.sdsp.act::after { color: rgba(255,255,255,.65); }
+.scol { font-size: clamp(1.5rem, 3.5vw, 2.2rem); font-weight: 900; color: #6a80b0; padding-bottom: 2px; }
 .ampm-row { display: flex; gap: 6px; }
 .ampm-btn {
   font-family: var(--fh); font-weight: 800; font-size: .9rem;
@@ -614,6 +416,7 @@ main {
   background: var(--card); color: var(--mut); transition: all .14s;
 }
 .ampm-btn.sel { background: var(--H); color: #fff; border-color: var(--H); }
+
 /* Numpad */
 .npg { display: grid; grid-template-columns: repeat(3, 54px); gap: 6px; }
 .nk {
@@ -636,56 +439,61 @@ main {
 .nk.ok { background: var(--ok); color: #fff; border-color: var(--ok); font-size: .84rem; }
 .nk.ok:hover { filter: brightness(1.08); }
 
-/* ── DRUM PICKER ── */
-.drum-overlay { position:fixed; inset:0; z-index:900; }
+/* ══════════════════════════════════════════════════════
+   BUBNOVÝ VÝBĚR (drum picker)
+   ══════════════════════════════════════════════════════ */
+.drum-overlay { position: fixed; inset: 0; z-index: 900; }
 .drum-picker {
-  position:fixed; z-index:901;
-  background:#1a2340; border-radius:16px; overflow:hidden; width:110px;
-  box-shadow:0 12px 40px rgba(0,0,0,.55), 0 0 0 1.5px rgba(255,255,255,.10);
+  position: fixed; z-index: 901;
+  background: #1a2340; border-radius: 16px; overflow: hidden; width: 110px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.55), 0 0 0 1.5px rgba(255,255,255,.10);
 }
-.drum-inner { position:relative; }
+.drum-inner { position: relative; }
 .drum-center-line {
-  position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
-  height:48px;
-  background:rgba(255,255,255,.07);
-  border-top:1px solid rgba(255,255,255,.18);
-  border-bottom:1px solid rgba(255,255,255,.18);
-  pointer-events:none; z-index:1;
+  position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+  height: 48px;
+  background: rgba(255,255,255,.07);
+  border-top: 1px solid rgba(255,255,255,.18);
+  border-bottom: 1px solid rgba(255,255,255,.18);
+  pointer-events: none; z-index: 1;
 }
 .drum-scroll {
-  height:240px; overflow-y:scroll;
-  scroll-snap-type:y mandatory; -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
+  height: 240px; overflow-y: scroll;
+  scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
-.drum-scroll::-webkit-scrollbar { display:none; }
+.drum-scroll::-webkit-scrollbar { display: none; }
 .drum-item {
-  height:48px; display:flex; align-items:center; justify-content:center;
-  font-family:'Courier New',monospace; font-size:1.05rem; font-weight:700;
-  color:rgba(255,255,255,.22); scroll-snap-align:center;
-  cursor:pointer; user-select:none; transition:color .12s, font-size .12s;
+  height: 48px; display: flex; align-items: center; justify-content: center;
+  font-family: 'Courier New', monospace; font-size: 1.05rem; font-weight: 700;
+  color: rgba(255,255,255,.22); scroll-snap-align: center;
+  cursor: pointer; user-select: none; transition: color .12s, font-size .12s;
 }
-.drum-item.pad { pointer-events:none; cursor:default; }
-.drum-item.near { color:rgba(255,255,255,.50); }
-.drum-item.sel  { color:#fff; font-size:1.45rem; }
-.drum-inner::before,.drum-inner::after {
-  content:''; position:absolute; left:0; right:0; height:72px; z-index:2; pointer-events:none;
+.drum-item.pad { pointer-events: none; cursor: default; }
+.drum-item.near { color: rgba(255,255,255,.50); }
+.drum-item.sel  { color: #fff; font-size: 1.45rem; }
+.drum-inner::before, .drum-inner::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 72px; z-index: 2; pointer-events: none;
 }
-.drum-inner::before { top:0;    background:linear-gradient(to bottom,#1a2340 0%,transparent 100%); }
-.drum-inner::after  { bottom:0; background:linear-gradient(to top,   #1a2340 0%,transparent 100%); }
-/* DIW layout variants */
-.diw.with-numpad { flex-direction:row; align-items:flex-start; justify-content:center; gap:16px; }
-.diw-left  { display:flex; flex-direction:column; align-items:center; gap:8px; flex-shrink:0; }
-.diw-right { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
-/* Drum hint arrow on sdsp */
-.sdsp { cursor:pointer; position:relative; }
-.sdsp::after {
-  content:'▾'; position:absolute; bottom:-10px; left:50%; transform:translateX(-50%);
-  font-size:.65rem; color:rgba(255,255,255,.30); line-height:1;
-}
-.sdsp.act::after { color:rgba(255,255,255,.65); }
+.drum-inner::before { top: 0;    background: linear-gradient(to bottom, #1a2340 0%, transparent 100%); }
+.drum-inner::after  { bottom: 0; background: linear-gradient(to top,    #1a2340 0%, transparent 100%); }
 
 /* ══════════════════════════════════════════════════════
-   RESPONSIVE: mobile stacks vertically
+   ANIMACE
+   ══════════════════════════════════════════════════════ */
+@keyframes blinkR { 0%,100%{opacity:1} 50%{opacity:.08} }
+@keyframes blinkB { 0%,100%{opacity:1} 50%{opacity:.08} }
+.bh { animation: blinkR .55s ease-in-out 5; }
+.bm { animation: blinkB .55s ease-in-out 5; }
+@keyframes popIn {
+  0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+  60%  { transform: scale(1.35) rotate(4deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.pop { animation: popIn .4s cubic-bezier(.36,.07,.19,.97) both; }
+
+/* ══════════════════════════════════════════════════════
+   RESPONZIVNÍ: mobil — stack vertikálně
    ══════════════════════════════════════════════════════ */
 @media (max-width: 540px) {
   .learn-layout { flex-direction: column; }
@@ -696,17 +504,6 @@ main {
   .d2a-clock     { flex: 1 1 0; }
   .a2d-clock     { width: 100%; height: min(50vw, 240px); flex-shrink: 0; }
 }
-
-/* ══════════════════════════════════════════════════════
-   ANIMATIONS
-   ══════════════════════════════════════════════════════ */
-#cc { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
-@keyframes blinkR { 0%,100%{opacity:1} 50%{opacity:.08} }
-@keyframes blinkB { 0%,100%{opacity:1} 50%{opacity:.08} }
-.bh { animation: blinkR .55s ease-in-out 5; }
-.bm { animation: blinkB .55s ease-in-out 5; }
-@keyframes popIn { 0%{transform:scale(0)rotate(-15deg);opacity:0} 60%{transform:scale(1.35)rotate(4deg);opacity:1} 100%{transform:scale(1)rotate(0);opacity:1} }
-.pop { animation: popIn .4s cubic-bezier(.36,.07,.19,.97) both; }
 </style>
 </head>
 <body>
