@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Počítáme s Matýskem">
+<meta name="theme-color" content="#4a90d9">
+<title>Počítáme s Matýskem 🦊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── CSS PROMĚNNÉ ── */
+:root {
+  --color-correct: #5cb85c;
+  --color-wrong:   #e05c6a;
+  --color-hint:    #ffb347;
+  --color-neutral: #4a90d9;
+  --grade-1: #ff9f43; --grade-2: #48dbfb; --grade-3: #1dd1a1;
+  --grade-4: #a29bfe; --grade-5: #fd79a8; --grade-custom: #b2bec3;
+  --grade-color: var(--grade-2);
+  --bg: #fef9f0; --panel: #ffffff; --panel-2: #f0f6ff;
+  --border: #dde4f0; --text: #2d3a52; --text-muted: #7a88a8;
+  --radius: 16px; --shadow: 0 4px 22px rgba(74,100,180,0.12);
+  --font-display: 'Baloo 2', cursive; --font-body: 'Nunito', sans-serif;
+  --text-label:   clamp(11px,1.5vw,14px);
+  --text-body:    clamp(14px,2vw,18px);
+  --text-ui:      clamp(16px,2.5vw,22px);
+  --text-heading: clamp(20px,3.5vw,32px);
+  --text-display: clamp(28px,6vw,56px);
+  --text-numpad:  clamp(20px,4vw,36px);
+}
+
+/* ── RESET ── */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; overflow:hidden; }
+body {
+  font-family:var(--font-body); background:var(--bg); color:var(--text);
+  display:flex; flex-direction:column; height:100dvh;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none; -webkit-user-select:none;
+  touch-action:manipulation;
+}
+
+/* ── SCREENS ── */
+.screen { display:none; flex-direction:column; height:100%; overflow:hidden; }
+.screen.active { display:flex; }
+
+/* ── HEADER ── */
+.app-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 16px; background:var(--panel);
+  border-bottom:3px solid var(--grade-color);
+  min-height:58px; flex-shrink:0; gap:8px;
+  transition:border-color .3s;
+}
+.app-header .hdr-title {
+  font-family:var(--font-display); font-size:var(--text-ui);
+  flex:1; text-align:center;
+}
+.btn-icon {
+  background:none; border:none; font-size:var(--text-body); font-weight:700;
+  cursor:pointer; padding:8px 10px; border-radius:10px;
+  transition:background .15s; font-family:var(--font-body); color:var(--text);
+  white-space:nowrap;
+}
+.btn-icon:hover { background:var(--panel-2); }
+.score-badge {
+  font-family:var(--font-display); font-size:var(--text-body);
+  font-weight:700; color:var(--color-hint); min-width:52px; text-align:right;
+}
+
+/* ── HOME ── */
+#scr-home {
+  align-items:center; justify-content:center;
+  gap:16px; padding:20px 20px 28px; overflow-y:auto;
+}
+.home-top { width:100%; display:flex; justify-content:space-between; align-items:center; }
+.btn-back-index {
+  font-family:var(--font-body); font-size:var(--text-label); font-weight:700;
+  color:var(--text-muted); text-decoration:none; padding:6px 14px;
+  border:2px solid var(--border); border-radius:20px; background:var(--panel);
+  transition:all .15s; touch-action:manipulation;
+  display:inline-flex; align-items:center; white-space:nowrap;
+}
+.btn-back-index:hover { border-color:var(--color-neutral); color:var(--color-neutral); }
+.btn-settings {
+  background:none; border:2px solid var(--border); border-radius:50%;
+  width:50px; height:50px; font-size:22px; cursor:pointer;
+  transition:background .15s,border-color .15s;
+  display:flex; align-items:center; justify-content:center;
+}
+.btn-settings:hover { background:var(--panel-2); border-color:var(--grade-color); }
+.home-mascot { font-size:clamp(64px,14vw,104px); line-height:1; }
+.home-title { font-family:var(--font-display); font-size:var(--text-heading); text-align:center; }
+.home-badge {
+  background:var(--panel); border:2.5px solid var(--grade-color);
+  border-radius:24px; padding:10px 22px; text-align:center;
+  transition:border-color .3s; max-width:340px; width:100%;
+}
+.home-badge-main { font-size:var(--text-body); font-weight:700; }
+.home-badge-sub  { font-size:var(--text-label); color:var(--text-muted); margin-top:3px; letter-spacing:2px; }
+.home-score { font-size:var(--text-body); color:var(--text-muted); font-weight:700; }
+.home-score .val { color:var(--color-hint); }
+.home-actions { display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%; max-width:400px; }
+.btn-main {
+  font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
+  border:none; border-radius:var(--radius); padding:18px 10px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  transition:transform .15s,box-shadow .15s; box-shadow:var(--shadow); color:#fff;
+}
+.btn-main:hover:not(:disabled) { transform:scale(1.05); }
+.btn-main:active:not(:disabled) { transform:scale(0.95); }
+.btn-main .em { font-size:32px; }
+.btn-main.learn { background:linear-gradient(135deg,#5cb85c,#27ae60); }
+.btn-main.test  { background:linear-gradient(135deg,#4a90d9,#1a6cc0); }
+.btn-main:disabled { background:#c8d3e0!important; color:#8896a8!important; cursor:not-allowed; box-shadow:none; }
+.home-hint { font-size:var(--text-label); color:var(--text-muted); text-align:center; display:none; }
+.home-hint.show { display:block; }
+
+/* ── QUESTION LAYOUT ── */
+.q-wrap { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+.prog-bar { height:6px; background:var(--border); flex-shrink:0; }
+.prog-fill { height:100%; background:var(--grade-color); transition:width .4s ease; }
+.visual-area {
+  flex:1; min-height:0; display:flex; align-items:center; justify-content:center;
+  padding:12px; background:var(--panel-2); overflow:hidden;
+}
+.q-card {
+  flex-shrink:0; background:var(--panel);
+  border-radius:var(--radius) var(--radius) 0 0;
+  padding:14px 18px 10px; box-shadow:0 -4px 18px rgba(0,0,0,0.08);
+}
+.q-meta { font-size:var(--text-label); color:var(--text-muted); margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+.mascot { font-size:22px; transition:filter .3s; display:inline-block; }
+.mascot.happy { filter:drop-shadow(0 0 8px #5cb85c); }
+.mascot.sad   { filter:drop-shadow(0 0 8px #e05c6a); }
+.mascot.hint  { filter:drop-shadow(0 0 8px #ffb347); }
+.q-expr {
+  font-family:var(--font-display); font-size:var(--text-display);
+  font-weight:700; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+}
+.ans-disp {
+  min-width:72px; border-bottom:4px solid var(--grade-color);
+  text-align:center; color:var(--grade-color); min-height:1.1em;
+  display:inline-flex; align-items:center; justify-content:center;
+  transition:color .3s;
+}
+.fb-banner {
+  padding:8px 14px; border-radius:12px; font-size:var(--text-body);
+  font-weight:700; text-align:center; margin-top:8px; display:none;
+}
+.fb-banner.correct { background:#d4edda; color:#155724; display:block; }
+.fb-banner.wrong   { background:#f8d7da; color:#721c24; display:block; }
+.fb-banner.hint    { background:#fff3cd; color:#856404; display:block; }
+
+/* ── INPUT AREA ── */
+.input-area { flex-shrink:0; background:var(--panel); padding:8px 12px 16px; }
+.numpad {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+  max-width:340px; margin:0 auto 10px;
+}
+.np-btn {
+  font-family:var(--font-display); font-size:var(--text-numpad); font-weight:700;
+  min-height:64px; border:2px solid var(--border); border-radius:14px;
+  background:var(--panel); color:var(--text); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .1s,background .1s; touch-action:manipulation;
+}
+.np-btn:active { transform:scale(0.92); background:var(--panel-2); }
+.np-zero { grid-column:1/3; }
+.np-del  { background:#fff0f0; border-color:#ffc2c2; }
+.btn-check {
+  width:100%; max-width:340px; display:block; margin:0 auto 8px;
+  font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
+  padding:14px; border:none; border-radius:14px;
+  background:var(--color-correct); color:#fff; cursor:pointer;
+  transition:transform .15s,opacity .15s;
+}
+.btn-check:hover { transform:scale(1.02); }
+.btn-check:active { transform:scale(0.97); }
+.btn-check:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+.learn-actions { display:flex; gap:8px; max-width:340px; margin:0 auto; }
+.btn-hint,.btn-skip {
+  flex:1; font-family:var(--font-body); font-size:var(--text-body); font-weight:700;
+  padding:10px; border-radius:12px; cursor:pointer;
+  border:2px solid var(--border); background:var(--panel); color:var(--text-muted);
+  transition:all .15s; touch-action:manipulation;
+}
+.btn-hint:hover { border-color:var(--color-hint); color:var(--color-hint); }
+.btn-skip:hover { border-color:var(--color-neutral); color:var(--color-neutral); }
+
+/* ── MULTIPLE CHOICE ── */
+.mc-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  max-width:360px; margin:0 auto 10px;
+}
+.mc-btn {
+  font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
+  min-height:72px; border:3px solid var(--border); border-radius:14px;
+  background:var(--panel); color:var(--text); cursor:pointer;
+  transition:all .15s; touch-action:manipulation;
+}
+.mc-btn:hover:not(:disabled) { border-color:var(--grade-color); transform:scale(1.04); }
+.mc-btn:active:not(:disabled) { transform:scale(0.95); }
+.mc-btn.ok  { border-color:var(--color-correct); background:#d4edda; }
+.mc-btn.bad { border-color:var(--color-wrong);   background:#f8d7da; }
+.mc-btn:disabled { cursor:not-allowed; }
+
+/* ── RESULTS ── */
+#scr-results { overflow-y:auto; }
+.results-body { padding:20px; display:flex; flex-direction:column; align-items:center; gap:16px; }
+.res-title { font-family:var(--font-display); font-size:var(--text-heading); text-align:center; }
+.res-big { font-family:var(--font-display); font-size:clamp(48px,10vw,80px); font-weight:700; color:var(--grade-color); }
+.res-stars { font-size:30px; letter-spacing:4px; }
+.res-stats { display:flex; gap:20px; font-size:var(--text-body); color:var(--text-muted); font-weight:700; flex-wrap:wrap; justify-content:center; }
+.res-history {
+  background:var(--panel); border-radius:var(--radius);
+  padding:16px; width:100%; max-width:480px; max-height:280px;
+  overflow-y:auto; box-shadow:var(--shadow);
+}
+.hi-item {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:8px 0; border-bottom:1px solid var(--border);
+  font-size:var(--text-body);
+}
+.hi-item:last-child { border:none; }
+.hi-item .ico { font-size:18px; flex-shrink:0; margin-top:1px; }
+.hi-item .bad-ans { color:var(--color-wrong); text-decoration:line-through; }
+.hi-item .ok-ans  { color:var(--color-correct); font-weight:700; }
+.res-actions { display:flex; gap:12px; width:100%; max-width:380px; }
+.btn-2nd {
+  flex:1; font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
+  padding:14px; border-radius:14px; border:2px solid var(--border);
+  background:var(--panel); color:var(--text); cursor:pointer; transition:all .15s;
+}
+.btn-2nd:hover { border-color:var(--grade-color); }
+.btn-prim {
+  flex:1; font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
+  padding:14px; border-radius:14px; border:none;
+  background:linear-gradient(135deg,#4a90d9,#1a6cc0); color:#fff;
+  cursor:pointer; transition:all .15s;
+}
+.btn-prim:hover { transform:scale(1.03); }
+
+/* ── SETTINGS ── */
+#scr-settings { overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.settings-body { padding:16px; padding-bottom:40px; max-width:600px; margin:0 auto; }
+.s-section { background:var(--panel); border-radius:var(--radius); padding:16px; margin-bottom:14px; box-shadow:var(--shadow); }
+.s-section h3 { font-family:var(--font-display); font-size:var(--text-ui); margin-bottom:14px; }
+
+/* Preset row */
+.preset-row { display:flex; gap:6px; flex-wrap:wrap; }
+.preset-btn {
+  flex:1; min-width:48px; display:flex; flex-direction:column;
+  align-items:center; gap:2px; padding:8px 4px; border-radius:12px;
+  border:2px solid var(--border); background:var(--panel); cursor:pointer;
+  transition:all .15s; font-family:var(--font-body);
+  font-size:var(--text-label); font-weight:700; color:var(--text-muted);
+}
+.preset-btn .pe { font-size:22px; }
+.preset-btn.active {
+  border-color:var(--grade-color);
+  background:color-mix(in srgb,var(--grade-color) 14%,white);
+  color:var(--text);
+}
+.preset-btn:hover { border-color:var(--grade-color); }
+.custom-reset {
+  background:#fff3cd; border-radius:10px; padding:10px 14px; margin-top:10px;
+  display:none; align-items:center; justify-content:space-between; gap:10px;
+  font-size:var(--text-body);
+}
+.custom-reset.show { display:flex; }
+.btn-reset {
+  font-size:var(--text-label); padding:6px 12px; border-radius:8px;
+  border:2px solid #856404; background:none; color:#856404;
+  cursor:pointer; font-weight:700; white-space:nowrap;
+}
+
+/* Topic rows */
+.topic-row { border-radius:12px; border:2px solid var(--border); margin-bottom:10px; overflow:hidden; transition:border-color .2s; }
+.topic-row.on { border-color:var(--grade-color); }
+.topic-hdr { display:flex; align-items:center; gap:10px; padding:13px 14px; cursor:pointer; }
+.topic-ico { font-size:20px; }
+.topic-lbl { flex:1; font-size:var(--text-body); font-weight:700; }
+.topic-sum { font-size:var(--text-label); color:var(--text-muted); margin-right:8px; max-width:120px; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* Toggle */
+.tgl-wrap { position:relative; width:52px; height:28px; flex-shrink:0; }
+.tgl-inp  { opacity:0; width:0; height:0; position:absolute; }
+.tgl-lbl  {
+  display:block; width:52px; height:28px; background:#ccc;
+  border-radius:28px; cursor:pointer; transition:background .2s; position:relative;
+}
+.tgl-lbl::after {
+  content:''; position:absolute; left:3px; top:3px;
+  width:22px; height:22px; border-radius:50%; background:#fff;
+  transition:transform .2s; box-shadow:0 2px 4px rgba(0,0,0,0.2);
+}
+.tgl-inp:checked + .tgl-lbl { background:var(--color-correct); }
+.tgl-inp:checked + .tgl-lbl::after { transform:translateX(24px); }
+/* Topic detail */
+.topic-detail { padding:12px 14px 14px; border-top:1px solid var(--border); background:var(--panel-2); display:none; }
+.topic-detail.open { display:block; }
+.detail-lbl { font-size:var(--text-label); font-weight:700; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em; }
+.level-grid { display:flex; flex-wrap:wrap; gap:6px; }
+.level-btn {
+  padding:7px 12px; border-radius:20px; border:2px solid var(--border);
+  background:var(--panel); font-size:var(--text-label); font-weight:700;
+  cursor:pointer; transition:all .15s; color:var(--text);
+}
+.level-btn.active { border-color:var(--grade-color); background:color-mix(in srgb,var(--grade-color) 14%,white); }
+.level-btn:hover  { border-color:var(--grade-color); }
+.tables-grid { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+.tbl-btn {
+  width:44px; height:44px; border-radius:10px; border:2px solid var(--border);
+  background:var(--panel); font-size:var(--text-body); font-weight:700;
+  cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center;
+}
+.tbl-btn.active { border-color:var(--grade-color); background:color-mix(in srgb,var(--grade-color) 22%,white); }
+.quick-btns { display:flex; gap:6px; flex-wrap:wrap; }
+.btn-quick {
+  font-size:var(--text-label); padding:6px 12px; border-radius:20px;
+  border:2px solid var(--border); background:var(--panel);
+  cursor:pointer; font-weight:700; color:var(--text-muted); transition:all .15s;
+}
+.btn-quick:hover { border-color:var(--color-neutral); color:var(--color-neutral); }
+/* Game opts */
+.s-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+.s-row:last-child { margin-bottom:0; }
+.s-row-lbl { font-size:var(--text-body); font-weight:700; }
+.opt-btns { display:flex; gap:6px; flex-wrap:wrap; }
+.opt-btn {
+  padding:6px 14px; border-radius:20px; border:2px solid var(--border);
+  background:var(--panel); font-size:var(--text-label); font-weight:700;
+  cursor:pointer; transition:all .15s; color:var(--text);
+}
+.opt-btn.active { border-color:var(--grade-color); background:color-mix(in srgb,var(--grade-color) 14%,white); }
+.opt-btn:hover  { border-color:var(--grade-color); }
+/* Buttons in settings */
+.btn-s-action {
+  display:block; width:100%; font-size:var(--text-body); font-weight:700;
+  padding:12px 16px; border-radius:12px; border:2px solid var(--border);
+  background:var(--panel); cursor:pointer; text-align:left;
+  color:var(--text); margin-bottom:10px; transition:all .15s;
+  font-family:var(--font-body);
+}
+.btn-s-action:hover { border-color:var(--color-neutral); }
+.btn-danger {
+  display:block; width:100%; font-size:var(--text-body); font-weight:700;
+  padding:12px 16px; border-radius:12px; border:2px solid #f8d7da;
+  background:#fff5f5; cursor:pointer; text-align:left;
+  color:var(--color-wrong); font-family:var(--font-body); transition:all .15s;
+}
+.btn-danger:hover { background:#f8d7da; }
+.preview-box {
+  background:var(--panel-2); border:2px solid var(--border);
+  border-radius:10px; padding:10px 14px; font-size:var(--text-label);
+  color:var(--text-muted); margin-top:4px;
+}
+
+/* ── PIN DIALOG ── */
+.overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.6);
+  display:none; align-items:center; justify-content:center; z-index:1000; padding:20px;
+}
+.overlay.open { display:flex; }
+.dialog {
+  background:var(--panel); border-radius:24px; padding:24px;
+  width:100%; max-width:340px; box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.dialog-title { font-family:var(--font-display); font-size:var(--text-heading); text-align:center; margin-bottom:16px; }
+.pin-dots { display:flex; justify-content:center; gap:14px; margin-bottom:20px; }
+.pin-dot { width:20px; height:20px; border-radius:50%; border:3px solid var(--border); background:var(--panel); transition:all .2s; }
+.pin-dot.on { background:var(--grade-color); border-color:var(--grade-color); }
+.pin-np { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+.pnp-btn {
+  font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
+  min-height:60px; border:2px solid var(--border); border-radius:14px;
+  background:var(--panel); cursor:pointer; transition:all .1s; touch-action:manipulation;
+}
+.pnp-btn:active { transform:scale(0.92); background:var(--panel-2); }
+.pnp-del { background:#fff0f0; border-color:#ffc2c2; }
+.pnp-cancel { background:var(--panel-2); }
+.pin-err { text-align:center; color:var(--color-wrong); font-weight:700; font-size:var(--text-body); min-height:24px; }
+
+/* ── CONFETTI ── */
+#confetti-canvas { position:fixed; inset:0; pointer-events:none; z-index:9999; }
+
+/* ── ANIMATIONS ── */
+@keyframes scorePop {
+  0%   { transform:scale(1); }
+  40%  { transform:scale(1.6); color:var(--color-hint); }
+  100% { transform:scale(1); }
+}
+.score-pop { animation:scorePop .45s ease; }
+
+@keyframes shakeX {
+  0%,100% { transform:translateX(0); }
+  20%      { transform:translateX(-9px); }
+  40%      { transform:translateX(9px); }
+  60%      { transform:translateX(-6px); }
+  80%      { transform:translateX(6px); }
+}
+.shake { animation:shakeX .4s ease; }
+
+@keyframes slideInLeft {
+  from { transform:translateX(-30px); opacity:0; }
+  to   { transform:translateX(0); opacity:1; }
+}
+.slide-in { animation:slideInLeft .2s ease; }
+
+@keyframes flashGreen {
+  0%,100% { background:var(--panel); }
+  25%     { background:#d4edda; }
+}
+@keyframes flashRed {
+  0%,100% { background:var(--panel); }
+  25%     { background:#f8d7da; }
+}
+.flash-ok  { animation:flashGreen .8s ease; }
+.flash-bad { animation:flashRed .8s ease; }
+
+/* ── NO VISUAL PLACEHOLDER ── */
+.no-visual { display:flex; align-items:center; justify-content:center; font-size:64px; opacity:.25; }
+</style>
+</head>
+<body>
+
+<!-- CONFETTI -->
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ══════════════════════════════════ HOME ══════════════════════════════════ -->
+<div id="scr-home" class="screen active">
+  <div class="home-top"><a href="index.html" class="btn-back-index">← Rozcestník</a><button class="btn-settings" id="btn-home-settings">⚙️</button></div>
+  <div class="home-mascot">🦊</div>
+  <h1 class="home-title">Počítáme s Matýskem</h1>
+  <div class="home-badge" id="home-badge">
+    <div class="home-badge-main" id="hbm">🐥 2. třída</div>
+    <div class="home-badge-sub"  id="hbs">➕ ➖ ✖️</div>
+  </div>
+  <div class="home-score">⭐ Tvoje hvězdičky: <span class="val" id="home-stars">0</span></div>
+  <div class="home-hint" id="home-hint">Otevři nastavení ⚙️ a vyber co procvičovat</div>
+  <div class="home-actions">
+    <button class="btn-main learn" id="btn-learn" onclick="startLearn()">
+      <span class="em">📚</span>VÝUKA
+    </button>
+    <button class="btn-main test" id="btn-test" onclick="startTest()">
+      <span class="em">📝</span>TEST
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ LEARN ══════════════════════════════════ -->
+<div id="scr-learn" class="screen">
+  <div class="app-header">
+    <button class="btn-icon" onclick="goHome()">← Domů</button>
+    <div class="hdr-title">Výuka</div>
+    <div class="score-badge" id="learn-score">⭐ 0</div>
+  </div>
+  <div class="q-wrap">
+    <div class="visual-area" id="learn-visual"></div>
+    <div class="q-card" id="learn-qcard">
+      <div class="q-meta">
+        <span class="mascot" id="learn-mascot">🦊</span>
+        <span id="learn-topic-lbl"></span>
+      </div>
+      <div class="q-expr" id="learn-expr"></div>
+      <div class="fb-banner" id="learn-fb"></div>
+    </div>
+    <div class="input-area" id="learn-input"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ TEST ══════════════════════════════════ -->
+<div id="scr-test" class="screen">
+  <div class="app-header">
+    <button class="btn-icon" onclick="goHome()">← Konec</button>
+    <div class="hdr-title" id="test-title">TEST 0/10</div>
+    <div class="score-badge" id="test-score">⭐ 0</div>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="test-prog" style="width:0%"></div></div>
+  <div class="q-wrap">
+    <div class="visual-area" id="test-visual" style="flex:0 0 70px; padding:6px;">
+      <div class="no-visual"><span id="test-topic-em">➕</span></div>
+    </div>
+    <div class="q-card" id="test-qcard">
+      <div class="q-meta"><span id="test-topic-lbl"></span></div>
+      <div class="q-expr" id="test-expr"></div>
+      <div class="fb-banner" id="test-fb"></div>
+    </div>
+    <div class="input-area" id="test-input"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ RESULTS ══════════════════════════════════ -->
+<div id="scr-results" class="screen">
+  <div class="app-header">
+    <div style="width:48px"></div>
+    <div class="hdr-title">Výsledky</div>
+    <div style="width:48px"></div>
+  </div>
+  <div class="results-body">
+    <div style="font-size:clamp(40px,8vw,64px)">🎉</div>
+    <div class="res-title">Test dokončen!</div>
+    <div class="res-big"  id="res-big">8 / 10 ✅</div>
+    <div class="res-stars" id="res-stars">⭐⭐⭐⭐⭐</div>
+    <div class="res-stats" id="res-stats"></div>
+    <div class="res-history" id="res-history"></div>
+    <div class="res-actions">
+      <button class="btn-2nd"  onclick="startTest()">🔁 Znovu</button>
+      <button class="btn-prim" onclick="goHome()">🏠 Domů</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ SETTINGS ══════════════════════════════════ -->
+<div id="scr-settings" class="screen">
+  <div class="app-header">
+    <button class="btn-icon" onclick="goHome()">← Zpět</button>
+    <div class="hdr-title">⚙️ Nastavení</div>
+    <div style="width:64px"></div>
+  </div>
+  <div class="settings-body">
+    <div class="s-section">
+      <h3>📚 Rychlý výběr třídy</h3>
+      <div class="preset-row" id="preset-row"></div>
+      <div class="custom-reset" id="custom-reset">
+        <span id="cr-text">✏️ Vlastní nastavení</span>
+        <button class="btn-reset" id="btn-cr">↩ Vrátit</button>
+      </div>
+    </div>
+    <div class="s-section">
+      <h3>🎯 Co procvičovat</h3>
+      <div id="topics-list"></div>
+      <div class="preview-box" id="preview-box">ℹ️ …</div>
+    </div>
+    <div class="s-section">
+      <h3>🎮 Nastavení hry</h3>
+      <div class="s-row">
+        <span class="s-row-lbl">Způsob odpovědi:</span>
+        <div class="opt-btns" id="opt-im"></div>
+      </div>
+      <div class="s-row">
+        <span class="s-row-lbl">Otázek v testu:</span>
+        <div class="opt-btns" id="opt-tl"></div>
+      </div>
+      <div class="s-row">
+        <span class="s-row-lbl">Pokusů pro nápovědu:</span>
+        <div class="opt-btns" id="opt-mt"></div>
+      </div>
+      <div class="s-row">
+        <span class="s-row-lbl">Auto-postup za:</span>
+        <div class="opt-btns" id="opt-ad"></div>
+      </div>
+    </div>
+    <div class="s-section">
+      <h3>🔒 Rodič / Bezpečnost</h3>
+      <button class="btn-s-action" id="btn-pin-action" onclick="handlePinAction()">🔑 Nastavit rodičovský PIN</button>
+      <button class="btn-danger" onclick="doResetScore()">🗑️ Smazat skóre</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ PIN DIALOG ══════════════════════════════════ -->
+<div class="overlay" id="pin-overlay">
+  <div class="dialog">
+    <div class="dialog-title" id="pin-title">🔑 Zadej PIN</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-np">
+      <button class="pnp-btn" onclick="pIn('1')">1</button>
+      <button class="pnp-btn" onclick="pIn('2')">2</button>
+      <button class="pnp-btn" onclick="pIn('3')">3</button>
+      <button class="pnp-btn" onclick="pIn('4')">4</button>
+      <button class="pnp-btn" onclick="pIn('5')">5</button>
+      <button class="pnp-btn" onclick="pIn('6')">6</button>
+      <button class="pnp-btn" onclick="pIn('7')">7</button>
+      <button class="pnp-btn" onclick="pIn('8')">8</button>
+      <button class="pnp-btn" onclick="pIn('9')">9</button>
+      <button class="pnp-btn pnp-cancel" onclick="closePinDlg()">✕</button>
+      <button class="pnp-btn" onclick="pIn('0')">0</button>
+      <button class="pnp-btn pnp-del" onclick="pDel()">⌫</button>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// 1. TOPICS & PRESETS
+// ══════════════════════════════════════════════════
+const TOPICS = {
+  addition: {
+    label:'Sčítání', emoji:'➕', color:'#5cb85c',
+    levels:{
+      'to-10':     {label:'Do 10',               maxResult:10,      noCarry:true},
+      'to-20':     {label:'Do 20',               maxResult:20,      noCarry:true},
+      'to-100-nc': {label:'Do 100 bez přechodu', maxResult:100,     noCarry:true},
+      'to-100':    {label:'Do 100 s přechodem',  maxResult:100,     noCarry:false},
+      'to-1000':   {label:'Do 1000',             maxResult:1000,    noCarry:false},
+      'large':     {label:'Velká čísla',         maxResult:1000000, written:true},
+    },
+    defaultLevel:'to-100',
+  },
+  subtraction: {
+    label:'Odčítání', emoji:'➖', color:'#e05c6a',
+    levels:{
+      'to-10':     {label:'Do 10',               maxResult:10,      noBorrow:true},
+      'to-20':     {label:'Do 20',               maxResult:20,      noBorrow:true},
+      'to-100-nb': {label:'Do 100 bez přechodu', maxResult:100,     noBorrow:true},
+      'to-100':    {label:'Do 100 s přechodem',  maxResult:100,     noBorrow:false},
+      'to-1000':   {label:'Do 1000',             maxResult:1000,    noBorrow:false},
+      'large':     {label:'Velká čísla',         maxResult:1000000, written:true},
+    },
+    defaultLevel:'to-100',
+  },
+  multiplication: {
+    label:'Násobení', emoji:'✖️', color:'#4a90d9',
+    config:'tables', defaultTables:[2,3,4,5,10],
+  },
+  division: {
+    label:'Dělení', emoji:'➗', color:'#9b59b6',
+    config:'tables', defaultTables:[2,3,4,5,10],
+  },
+  fractions: {
+    label:'Zlomky', emoji:'🍰', color:'#ffb347',
+    levels:{
+      'intro':      {label:'Poznávání (jaká část?)'},
+      'comparison': {label:'Porovnávání zlomků'},
+      'operations': {label:'Sčítání a odčítání'},
+    },
+    defaultLevel:'intro',
+  },
+  decimals: {
+    label:'Desetinná čísla', emoji:'🔢', color:'#1abc9c',
+    levels:{
+      'intro':      {label:'Seznámení'},
+      'operations': {label:'Operace s desetinami'},
+    },
+    defaultLevel:'intro',
+  },
+};
+
+const GRADE_COLORS = {
+  'grade-1':'#ff9f43','grade-2':'#48dbfb','grade-3':'#1dd1a1',
+  'grade-4':'#a29bfe','grade-5':'#fd79a8','custom':'#b2bec3',
+};
+
+const PRESETS = {
+  'grade-1':{label:'1. třída',emoji:'🐣',config:{
+    addition:   {enabled:true,  level:'to-10'},
+    subtraction:{enabled:true,  level:'to-10'},
+  }},
+  'grade-2':{label:'2. třída',emoji:'🐥',config:{
+    addition:       {enabled:true,  level:'to-100-nc'},
+    subtraction:    {enabled:true,  level:'to-100-nc'},
+    multiplication: {enabled:true,  tables:[2,3,4,5,10]},
+    division:       {enabled:false, tables:[2,3,4,5]},
+  }},
+  'grade-3':{label:'3. třída',emoji:'🐤',config:{
+    addition:       {enabled:true, level:'to-1000'},
+    subtraction:    {enabled:true, level:'to-1000'},
+    multiplication: {enabled:true, tables:[2,3,4,5,6,7,8,9,10]},
+    division:       {enabled:true, tables:[2,3,4,5,6,7,8,9,10]},
+  }},
+  'grade-4':{label:'4. třída',emoji:'🦆',config:{
+    addition:       {enabled:true, level:'large'},
+    subtraction:    {enabled:true, level:'large'},
+    multiplication: {enabled:true, tables:[2,3,4,5,6,7,8,9,10]},
+    division:       {enabled:true, tables:[2,3,4,5,6,7,8,9,10]},
+    fractions:      {enabled:true, level:'intro'},
+  }},
+  'grade-5':{label:'5. třída',emoji:'🦅',config:{
+    addition:       {enabled:true, level:'large'},
+    subtraction:    {enabled:true, level:'large'},
+    multiplication: {enabled:true, tables:[2,3,4,5,6,7,8,9,10]},
+    division:       {enabled:true, tables:[2,3,4,5,6,7,8,9,10]},
+    fractions:      {enabled:true, level:'operations'},
+    decimals:       {enabled:true, level:'intro'},
+  }},
+  'custom':{label:'Vlastní',emoji:'⚙️',config:null},
+};
+
+// ══════════════════════════════════════════════════
+// 2. STATE
+// ══════════════════════════════════════════════════
+const S = {
+  // persistovaná
+  preset:'grade-2',
+  config:{
+    addition:       {enabled:true,  level:'to-100-nc'},
+    subtraction:    {enabled:true,  level:'to-100-nc'},
+    multiplication: {enabled:true,  tables:[2,3,4,5,10]},
+    division:       {enabled:false, tables:[2,3,4,5]},
+    fractions:      {enabled:false, level:'intro'},
+    decimals:       {enabled:false, level:'intro'},
+  },
+  lastPreset:'grade-2',
+  score:0, badges:[],
+  autoAdvance:true, autoDelay:3, maxTries:3, testLength:10,
+  inputMode:'auto',   // 'auto' | 'numeric' | 'choice'
+  parentPinHash:null, lang:'cs',
+  // session
+  screen:'home', mode:'learn',
+  currentQ:null, qIdx:0,
+  tries:0, answered:false, buf:'',
+  sessCorrect:0, sessWrong:0, sessHistory:[],
+  startTime:null, autoTimer:null, expandedTopic:null,
+};
+
+// ══════════════════════════════════════════════════
+// 3. PERSISTENCE
+// ══════════════════════════════════════════════════
+const PFX = 'matysek_';
+const SCHEMA = {
+  preset:        {default:'grade-2', validate:v=>v in PRESETS},
+  config:        {default:null,      validate:validateCfg},
+  lastPreset:    {default:'grade-2', validate:v=>v in PRESETS && v!=='custom'},
+  score:         {default:0,         validate:v=>Number.isInteger(v)&&v>=0},
+  badges:        {default:[],        validate:v=>Array.isArray(v)},
+  autoAdvance:   {default:true,      validate:v=>typeof v==='boolean'},
+  autoDelay:     {default:3,         validate:v=>[2,3,5,null].includes(v)},
+  maxTries:      {default:3,         validate:v=>[1,2,3].includes(v)},
+  testLength:    {default:10,        validate:v=>[5,10,15,20].includes(v)},
+  inputMode:     {default:'auto',    validate:v=>['auto','numeric','choice'].includes(v)},
+  parentPinHash: {default:null,      validate:v=>v===null||typeof v==='string'},
+};
+function sv(k,v){ try{localStorage.setItem(PFX+k,JSON.stringify(v));}catch(e){} }
+function ld(k){ try{const r=localStorage.getItem(PFX+k); return r===null?undefined:JSON.parse(r);}catch(e){return undefined;} }
+function loadAll(){
+  for(const[k,sc] of Object.entries(SCHEMA)){
+    const v=ld(k);
+    S[k]=(v!==undefined&&sc.validate(v))?v:sc.default;
+  }
+  // Zajisti že config není nikdy null — applyPreset ho nastaví
+  if(S.config===null) applyPreset(S.preset);
+  // Tvrdý fallback: pokud je config stále null (custom+null edge case), padni na grade-2
+  if(!S.config){ S.preset='grade-2'; S.lastPreset='grade-2'; applyPreset('grade-2'); }
+  // Doplň témata která v uložené config chybí (nová témata po aktualizaci)
+  for(const key of Object.keys(TOPICS)){
+    if(!S.config[key]){
+      const td=TOPICS[key];
+      S.config[key]=td.config==='tables'
+        ?{enabled:false,tables:[...td.defaultTables]}
+        :{enabled:false,level:td.defaultLevel};
+    }
+  }
+}
+function validateCfg(cfg){
+  if(cfg===null) return true;
+  if(typeof cfg!=='object') return false;
+  for(const[k,c] of Object.entries(cfg)){
+    if(!(k in TOPICS)||typeof c.enabled!=='boolean') return false;
+    const td=TOPICS[k];
+    if(td.config==='tables'&&!Array.isArray(c.tables)) return false;
+    if(td.levels&&c.level&&!(c.level in td.levels)) return false;
+  }
+  return true;
+}
+
+// ══════════════════════════════════════════════════
+// 4. PRESET LOGIKA
+// ══════════════════════════════════════════════════
+function applyPreset(key){
+  const p=PRESETS[key];
+  if(p.config){
+    // Konkrétní preset — načti jeho config
+    S.config=JSON.parse(JSON.stringify(p.config));
+    for(const k of Object.keys(TOPICS)){
+      if(!S.config[k]){
+        const td=TOPICS[k];
+        S.config[k]=td.config==='tables'
+          ?{enabled:false,tables:[...td.defaultTables]}
+          :{enabled:false,level:td.defaultLevel};
+      }
+    }
+  } else {
+    // 'custom' — zachovej existující config; pokud je null, padni na lastPreset nebo grade-2
+    if(!S.config){
+      const fallbackKey=(S.lastPreset&&S.lastPreset!=='custom')?S.lastPreset:'grade-2';
+      const fallback=PRESETS[fallbackKey];
+      S.config=JSON.parse(JSON.stringify(fallback.config));
+      for(const k of Object.keys(TOPICS)){
+        if(!S.config[k]){
+          const td=TOPICS[k];
+          S.config[k]=td.config==='tables'
+            ?{enabled:false,tables:[...td.defaultTables]}
+            :{enabled:false,level:td.defaultLevel};
+        }
+      }
+    }
+  }
+  if(key!=='custom') S.lastPreset=key;
+  S.preset=key;
+  sv('preset',S.preset); sv('lastPreset',S.lastPreset); sv('config',S.config);
+  setGradeColor();
+}
+function updateTopicCfg(key,changes){
+  if(!S.config) S.config={};
+  if(!S.config[key]){
+    const td=TOPICS[key];
+    S.config[key]=td.config==='tables'
+      ?{enabled:false,tables:[...td.defaultTables]}
+      :{enabled:false,level:td.defaultLevel};
+  }
+  Object.assign(S.config[key],changes);
+  if(S.preset!=='custom'){S.preset='custom'; sv('preset','custom');}
+  sv('config',S.config);
+}
+function setGradeColor(){
+  document.documentElement.style.setProperty('--grade-color', GRADE_COLORS[S.preset]||GRADE_COLORS.custom);
+}
+
+// ══════════════════════════════════════════════════
+// 5. HELPERS
+// ══════════════════════════════════════════════════
+function getEnabled(){
+  if(!S.config) return [];
+  return Object.entries(S.config)
+    .filter(([_,c])=>{
+      if(!c||!c.enabled) return false;
+      if(TOPICS[_]?.config==='tables') return c.tables&&c.tables.length>0;
+      return true;
+    })
+    .map(([k,c])=>({key:k,...c,...TOPICS[k]}));
+}
+function hasTopics(){ return getEnabled().length>0; }
+function ri(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+function rnd(n){ return Math.floor(Math.random()*n); }
+function hasCarry(a,b){ return (a%10)+(b%10)>9; }
+function hasBorrow(a,b){ return (a%10)<(b%10); }
+function chooseVis(max){ if(max<=20) return 'dots'; if(max<=100) return 'numLine'; return null; }
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];} return a; }
+function genDistractors(correct,count){
+  const d=new Set(); let att=0;
+  while(d.size<count&&att<120){att++;
+    const delta=ri(1,Math.max(5,Math.ceil(Math.abs(correct)*.3)));
+    const val=correct+(Math.random()<.5?1:-1)*delta;
+    if(val>0&&val!==correct) d.add(val);
+  }
+  let fb=1; while(d.size<count){if(fb!==correct)d.add(fb);fb++;}
+  return [...d];
+}
+
+// ══════════════════════════════════════════════════
+// 6. GENERATORS
+// ══════════════════════════════════════════════════
+const recentExprs=[]; let lastTopicKey=null;
+
+const GEN={
+  addition(t){
+    const lvl=TOPICS.addition.levels[t.level]||TOPICS.addition.levels['to-100'];
+    const max=lvl.maxResult;
+    let a,b,att=0;
+    do{ a=ri(0,max); b=ri(0,max-a); att++; }
+    while(lvl.noCarry&&hasCarry(a,b)&&att<300);
+    return {topic:'addition',type:'numeric',expression:`${a} + ${b}`,
+      answer:a+b,operands:[a,b],op:'+',visual:chooseVis(max),
+      hint:`Začni od ${a} a přidej ${b}.`};
+  },
+  subtraction(t){
+    const lvl=TOPICS.subtraction.levels[t.level]||TOPICS.subtraction.levels['to-100'];
+    const max=lvl.maxResult;
+    let a,b,att=0;
+    do{ a=ri(0,max); b=ri(0,a); att++; }
+    while(lvl.noBorrow&&hasBorrow(a,b)&&att<300);
+    return {topic:'subtraction',type:'numeric',expression:`${a} − ${b}`,
+      answer:a-b,operands:[a,b],op:'−',visual:chooseVis(max),
+      hint:`Začni od ${a} a uber ${b}.`};
+  },
+  multiplication(t){
+    const tbls=t.tables||[]; if(!tbls.length) return null;
+    const tbl=tbls[rnd(tbls.length)], mult=ri(1,10), ans=tbl*mult;
+    return {topic:'multiplication',type:'multiple-choice',expression:`${tbl} × ${mult}`,
+      answer:ans,distractors:genDistractors(ans,3),operands:[tbl,mult],
+      visual:'multTable',hint:`${tbl}krát ${mult}.`};
+  },
+  division(t){
+    const tbls=t.tables||[]; if(!tbls.length) return null;
+    const div=tbls[rnd(tbls.length)], quot=ri(1,10), dvd=div*quot;
+    return {topic:'division',type:'multiple-choice',expression:`${dvd} ÷ ${div}`,
+      answer:quot,distractors:genDistractors(quot,3),operands:[dvd,div],
+      visual:null,hint:`Kolik ${div} se vejde do ${dvd}?`};
+  },
+  fractions(t){
+    const lvl=t.level||'intro';
+    if(lvl==='intro'){
+      const denom=ri(2,6),numer=ri(1,denom-1);
+      const dists=genDistractors(numer,3).filter(d=>d>0&&d<denom&&d!==numer);
+      let f=[...dists]; let x=1;
+      while(f.length<3){if(x!==numer&&x<denom&&!f.includes(x))f.push(x);x++;}
+      return {topic:'fractions',type:'multiple-choice',
+        expression:`Kolik dílů ze ${denom} je zbarveno?`,
+        answer:numer,distractors:f.slice(0,3),
+        visual:'fracPie',fraction:{numer,denom},
+        hint:`Spočítej zbarvené díly z celkových ${denom}.`};
+    }
+    if(lvl==='comparison'){
+      const denom=ri(2,8); let n1=ri(1,denom-1),n2;
+      do{n2=ri(1,denom-1);}while(n2===n1);
+      const bigger=Math.max(n1,n2), smaller=Math.min(n1,n2);
+      return {topic:'fractions',type:'multiple-choice',
+        expression:`Které je větší: ${n1}/${denom} nebo ${n2}/${denom}?`,
+        answer:bigger,distractors:[smaller,denom,Math.max(0,bigger-1)].filter(v=>v!==bigger),
+        visual:null,hint:`Větší čitatel = větší zlomek (jmenovatel je stejný).`};
+    }
+    // operations
+    const denom=ri(2,6),n1=ri(1,denom-1),n2=ri(1,denom-n1);
+    const ans=n1+n2;
+    return {topic:'fractions',type:'numeric',
+      expression:`${n1}/${denom} + ${n2}/${denom} = ?/${denom}`,
+      answer:ans,operands:[n1,n2,denom],visual:null,
+      hint:`Sečti čitatele: ${n1} + ${n2}.`};
+  },
+  decimals(t){
+    const a=ri(0,9)+ri(1,9)/10, b=ri(0,9)+ri(1,9)/10;
+    const ans=Math.round((a+b)*10)/10;
+    return {topic:'decimals',type:'numeric',
+      expression:`${a.toFixed(1)} + ${b.toFixed(1)}`,
+      answer:ans,operands:[a,b],visual:null,
+      hint:`Sečti celé části, pak desetiny.`};
+  },
+};
+
+function generateQ(){
+  const en=getEnabled(); if(!en.length) return null;
+  let topic,att=0;
+  do{ topic=en[rnd(en.length)]; att++; }
+  while(topic.key===lastTopicKey&&en.length>1&&att<10);
+  lastTopicKey=topic.key;
+  let q=null,ga=0;
+  while(!q&&ga<25){
+    ga++;
+    q=GEN[topic.key]?GEN[topic.key](topic):null;
+    if(q&&recentExprs.includes(q.expression)) q=null;
+  }
+  if(q){
+    q.id=`q-${Date.now()}-${Math.random()}`;
+    recentExprs.push(q.expression);
+    if(recentExprs.length>3) recentExprs.shift();
+  }
+  return q;
+}
+
+// ══════════════════════════════════════════════════
+// 7. ROUTER
+// ══════════════════════════════════════════════════
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('scr-'+name).classList.add('active');
+  S.screen=name;
+}
+function goHome(){ clearAuto(); showScreen('home'); renderHome(); }
+
+// ══════════════════════════════════════════════════
+// 8. HOME
+// ══════════════════════════════════════════════════
+function renderHome(){
+  const en=getEnabled();
+  const has=en.length>0;
+  // badge
+  if(S.preset!=='custom'){
+    const p=PRESETS[S.preset];
+    document.getElementById('hbm').textContent=`${p.emoji} ${p.label}`;
+  } else {
+    document.getElementById('hbm').textContent='⚙️ Vlastní';
+  }
+  document.getElementById('hbs').textContent=en.map(t=>t.emoji).join(' ')||'(žádná témata)';
+  document.getElementById('home-stars').textContent=S.score;
+  document.getElementById('btn-learn').disabled=!has;
+  document.getElementById('btn-test').disabled=!has;
+  document.getElementById('home-hint').classList.toggle('show',!has);
+  document.getElementById('home-badge').style.borderColor=GRADE_COLORS[S.preset]||GRADE_COLORS.custom;
+}
+
+// ══════════════════════════════════════════════════
+// 9. LEARN
+// ══════════════════════════════════════════════════
+function startLearn(){
+  S.mode='learn'; S.sessCorrect=0; S.sessWrong=0; S.sessHistory=[]; S.qIdx=0;
+  showScreen('learn'); nextQ();
+}
+function nextQ(){
+  clearAuto(); S.currentQ=generateQ(); S.tries=0; S.answered=false; S.buf='';
+  if(!S.currentQ){goHome();return;}
+  renderQ();
+}
+// Vrátí efektivní typ vstupu pro aktuální otázku dle nastavení inputMode
+function effectiveType(q){
+  if(S.inputMode==='numeric') return 'numeric';
+  if(S.inputMode==='choice'){
+    // pro numeric otázky vygeneruj distraktory pokud chybí
+    if(!q.distractors) q.distractors=genDistractors(q.answer,3);
+    return 'multiple-choice';
+  }
+  return q.type; // 'auto' = přirozený typ otázky
+}
+
+function renderQ(){
+  const q=S.currentQ, isL=S.mode==='learn', px=isL?'learn':'test';
+  // header bits — defenzivní null guardi pro každý element
+  if(isL){
+    const ls=document.getElementById('learn-score');    if(ls) ls.textContent=`⭐ ${S.score}`;
+    const lt=document.getElementById('learn-topic-lbl'); if(lt) lt.textContent=TOPICS[q.topic]?.label||'';
+    setMascot('learn-mascot','neutral');
+  } else {
+    const ts=document.getElementById('test-score');     if(ts) ts.textContent=`⭐ ${S.score}`;
+    const tt=document.getElementById('test-title');     if(tt) tt.textContent=`TEST ${S.qIdx}/${S.testLength}`;
+    const tp=document.getElementById('test-prog');      if(tp) tp.style.width=(S.qIdx/S.testLength*100)+'%';
+    const tl=document.getElementById('test-topic-lbl'); if(tl) tl.textContent=TOPICS[q.topic]?.label||'';
+    const te=document.getElementById('test-topic-em');  if(te) te.textContent=TOPICS[q.topic]?.emoji||'';
+  }
+  // expression
+  const exEl=document.getElementById(px+'-expr');
+  if(!exEl) return; // safety: pokud screen není v DOM, přeruš render
+  exEl.classList.remove('slide-in'); void exEl.offsetWidth; exEl.classList.add('slide-in');
+  exEl.innerHTML=`<span>${q.expression} =</span><span class="ans-disp" id="${px}-ans">?</span>`;
+  // feedback clear
+  const fb=document.getElementById(px+'-fb');
+  if(fb){ fb.className='fb-banner'; fb.textContent=''; }
+  // visual — v testu se pomůcky skryjí (prozrazují odpověď), zobrazí se jen emoji tématu
+  if(S.mode==='learn') drawVisual(px+'-visual',q);
+  else {
+    const vEl=document.getElementById('test-visual');
+    if(vEl) vEl.innerHTML=`<div class="no-visual">${TOPICS[q.topic]?.emoji||'🔢'}</div>`;
+  }
+  // input
+  if(effectiveType(q)==='multiple-choice') renderMC(px+'-input',q);
+  else renderNP(px+'-input',px);
+}
+function drawVisual(cid,q){
+  const el=document.getElementById(cid); el.innerHTML='';
+  if(q.visual==='dots'&&q.operands){
+    const c=document.createElement('canvas'); el.appendChild(c);
+    drawDots(c,q.operands[0],q.operands[1],q.op);
+  } else if(q.visual==='numLine'&&q.operands){
+    el.appendChild(makeNumLineSVG(q.operands[0],q.operands[1],q.answer,q.op));
+  } else if(q.visual==='multTable'&&q.operands){
+    el.appendChild(makeMultTableSVG(q.operands[0],q.operands[1]));
+  } else if(q.visual==='fracPie'&&q.fraction){
+    el.appendChild(makeFracSVG(q.fraction.numer,q.fraction.denom));
+  } else {
+    el.innerHTML=`<div class="no-visual">${TOPICS[q.topic]?.emoji||'🔢'}</div>`;
+  }
+}
+function renderNP(cid,px){
+  // px je prefix screenu ('learn' nebo 'test') — zajišťuje unikátní ID btn-chk
+  if(!px) px=S.mode==='learn'?'learn':'test';
+  const el=document.getElementById(cid);
+  if(!el) return;
+  const isL=S.mode==='learn';
+  el.innerHTML=`
+    <div class="numpad">
+      <button class="np-btn" onclick="npPress('1')">1</button>
+      <button class="np-btn" onclick="npPress('2')">2</button>
+      <button class="np-btn" onclick="npPress('3')">3</button>
+      <button class="np-btn" onclick="npPress('4')">4</button>
+      <button class="np-btn" onclick="npPress('5')">5</button>
+      <button class="np-btn" onclick="npPress('6')">6</button>
+      <button class="np-btn" onclick="npPress('7')">7</button>
+      <button class="np-btn" onclick="npPress('8')">8</button>
+      <button class="np-btn" onclick="npPress('9')">9</button>
+      <button class="np-btn np-zero" onclick="npPress('0')">0</button>
+      <button class="np-btn np-del" onclick="npDel()">⌫</button>
+    </div>
+    <button class="btn-check" id="${px}-chk" onclick="checkAns()" disabled>✓ Zkontrolovat</button>
+    ${isL?`<div class="learn-actions">
+      <button class="btn-hint" onclick="showHint()">💡 Nápověda</button>
+      <button class="btn-skip" onclick="skipQ()">⏭️ Přeskočit</button>
+    </div>`:''}`;
+}
+function renderMC(cid,q){
+  const el=document.getElementById(cid), isL=S.mode==='learn';
+  const all=shuffle([q.answer,...q.distractors]);
+  el.innerHTML=`
+    <div class="mc-grid" id="mc-grid">
+      ${all.map(v=>`<button class="mc-btn" onclick="checkMC(${v})" data-v="${v}">${v}</button>`).join('')}
+    </div>
+    ${isL?`<div class="learn-actions" style="max-width:360px;margin:8px auto 0">
+      <button class="btn-hint" onclick="showHint()">💡 Nápověda</button>
+      <button class="btn-skip" onclick="skipQ()">⏭️ Přeskočit</button>
+    </div>`:''}`;
+}
+function npPress(d){ if(S.answered||S.buf.length>=7) return; S.buf+=d; updateAnsDisp(); }
+function npDel(){ if(S.answered) return; S.buf=S.buf.slice(0,-1); updateAnsDisp(); }
+function updateAnsDisp(){
+  const px=S.mode==='learn'?'learn':'test';
+  const el=document.getElementById(px+'-ans'); if(el) el.textContent=S.buf||'?';
+  const b=document.getElementById(px+'-chk'); if(b) b.disabled=!S.buf;
+}
+document.addEventListener('keydown',e=>{
+  if(S.screen!=='learn'&&S.screen!=='test') return;
+  if(S.currentQ&&effectiveType(S.currentQ)!=='numeric') return; // výběr — klávesnice nefunguje
+  if(e.key>='0'&&e.key<='9') npPress(e.key);
+  else if(e.key==='Backspace') npDel();
+  else if(e.key==='Enter') checkAns();
+});
+function checkAns(){
+  if(S.answered||!S.buf) return;
+  const q=S.currentQ;
+  let ua;
+  if(q.topic==='decimals') ua=parseFloat(S.buf);
+  else ua=parseInt(S.buf,10);
+  if(isNaN(ua)) return;
+  const ok=q.topic==='decimals'?Math.abs(ua-q.answer)<.001:(ua===q.answer);
+  if(ok) onCorrect(); else onWrong(ua);
+}
+function checkMC(val){
+  if(S.answered) return;
+  const q=S.currentQ, ok=(val===q.answer);
+
+  if(ok){
+    // Správná odpověď — zablokuj vše, zvýrazni zeleně
+    document.querySelectorAll('.mc-btn').forEach(b=>{
+      b.disabled=true;
+      if(+b.dataset.v===q.answer) b.classList.add('ok');
+    });
+    onCorrect();
+  } else {
+    // Špatná odpověď — zablokuj a zčervej jen kliknuté tlačítko
+    const badBtn=document.querySelector(`.mc-btn[data-v="${val}"]`);
+    if(badBtn){ badBtn.classList.add('bad'); badBtn.disabled=true; }
+
+    onWrong(val); // může nastavit S.answered=true pokud vyčerpány pokusy
+
+    if(S.answered){
+      // Pokusy vyčerpány — teprve TEĎ odhal správnou odpověď a zablokuj zbytek
+      document.querySelectorAll('.mc-btn').forEach(b=>{
+        b.disabled=true;
+        if(+b.dataset.v===q.answer) b.classList.add('ok');
+      });
+    }
+    // Jinak ostatní tlačítka zůstanou aktivní pro další pokus
+  }
+}
+
+// ══════════════════════════════════════════════════
+// 10. FEEDBACK
+// ══════════════════════════════════════════════════
+function onCorrect(){
+  S.answered=true; S.sessCorrect++; S.score++; S.qIdx++;
+  S.sessHistory.push({q:S.currentQ,correct:true,ua:S.currentQ.answer});
+  sv('score',S.score); checkBadges();
+  const px=S.mode==='learn'?'learn':'test';
+  const ad=document.getElementById(px+'-ans');
+  if(ad){ad.textContent=S.currentQ.answer;ad.style.color='var(--color-correct)';}
+  if(S.mode==='learn'){
+    setMascot('learn-mascot','happy');
+    showFB('learn-fb','correct','🎉 Výborně!');
+    launchConfetti(); animScore('learn-score');
+    scheduleNext(S.autoDelay);
+  } else {
+    const card=document.getElementById('test-qcard');
+    card.classList.remove('flash-ok','flash-bad'); void card.offsetWidth; card.classList.add('flash-ok');
+    launchConfetti(); animScore('test-score');
+    if(S.qIdx>=S.testLength) setTimeout(showResults,800);
+    else setTimeout(()=>{nextQ();},800);
+  }
+}
+function onWrong(ua){
+  S.tries++;
+  if(S.mode==='test'){
+    S.sessWrong++; S.sessHistory.push({q:S.currentQ,correct:false,ua}); S.qIdx++;
+    const ad=document.getElementById('test-ans');
+    if(ad){ad.textContent=S.currentQ.answer;ad.style.color='var(--color-correct)';}
+    showFB('test-fb','wrong',`❌ Správně: ${S.currentQ.answer}`);
+    const card=document.getElementById('test-qcard');
+    card.classList.remove('flash-ok','flash-bad'); void card.offsetWidth; card.classList.add('flash-bad');
+    if(S.qIdx>=S.testLength) setTimeout(showResults,1500);
+    else setTimeout(()=>{nextQ();},1500);
+    return;
+  }
+  // learn
+  setMascot('learn-mascot', S.tries>=S.maxTries?'hint':'sad');
+  shakeAns();
+  if(S.tries<S.maxTries){
+    const left=S.maxTries-S.tries;
+    showFB('learn-fb','wrong',`💡 Zkus to znovu! (ještě ${left} ${left===1?'pokus':'pokusy'})`);
+  } else {
+    S.answered=true; S.sessWrong++;
+    S.sessHistory.push({q:S.currentQ,correct:false,ua});
+    showFB('learn-fb','hint',`👉 Správně je: ${S.currentQ.answer}`);
+    const ad=document.getElementById('learn-ans');
+    if(ad){ad.textContent=S.currentQ.answer;ad.style.color='var(--color-correct)';}
+    scheduleNext(S.autoDelay*1.5);
+  }
+  S.buf=''; updateAnsDisp();
+}
+function showFB(id,type,txt){
+  const el=document.getElementById(id); if(!el)return;
+  el.className='fb-banner '+type; el.textContent=txt;
+}
+function shakeAns(){
+  const px=S.mode==='learn'?'learn':'test';
+  const el=document.getElementById(px+'-ans'); if(!el)return;
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+}
+function showHint(){
+  if(!S.currentQ)return;
+  showFB('learn-fb','hint',`💡 ${S.currentQ.hint}`);
+  setMascot('learn-mascot','hint');
+}
+function skipQ(){ clearAuto(); S.qIdx++; nextQ(); }
+function scheduleNext(delaySec){
+  clearAuto();
+  if(!S.autoAdvance||delaySec===null)return;
+  S.autoTimer=setTimeout(()=>{ if(S.screen==='learn'){nextQ();} },delaySec*1000);
+}
+function clearAuto(){ if(S.autoTimer){clearTimeout(S.autoTimer);S.autoTimer=null;} }
+function animScore(id){
+  const el=document.getElementById(id); if(!el)return;
+  el.textContent=`⭐ ${S.score}`;
+  el.classList.remove('score-pop'); void el.offsetWidth; el.classList.add('score-pop');
+}
+function setMascot(id,state){
+  const el=document.getElementById(id); if(!el)return;
+  el.className='mascot '+(state==='happy'?'happy':state==='sad'?'sad':state==='hint'?'hint':'');
+}
+function checkBadges(){
+  for(const m of [10,50,100,500]){
+    if(S.score>=m&&!S.badges.includes(m)){
+      S.badges.push(m); sv('badges',S.badges);
+      const b=document.createElement('div');
+      b.style.cssText='position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--color-hint);color:#fff;padding:12px 24px;border-radius:24px;font-family:var(--font-display);font-size:var(--text-ui);font-weight:700;z-index:5000;box-shadow:var(--shadow)';
+      b.textContent=`🏅 Gratulace! Dosáhl jsi ${m} ⭐!`;
+      document.body.appendChild(b); setTimeout(()=>b.remove(),3000);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════
+// 11. TEST & RESULTS
+// ══════════════════════════════════════════════════
+function startTest(){
+  S.mode='test'; S.sessCorrect=0; S.sessWrong=0; S.sessHistory=[]; S.qIdx=0;
+  S.startTime=Date.now(); showScreen('test'); nextQ();
+}
+function calcStars(c,t){
+  const p=c/t;
+  if(p>=.95)return 5; if(p>=.8)return 4; if(p>=.65)return 3; if(p>=.5)return 2; if(p>=.3)return 1; return 0;
+}
+function showResults(){
+  showScreen('results');
+  const c=S.sessCorrect, t=S.qIdx, stars=calcStars(c,t);
+  const el=Math.floor((Date.now()-S.startTime)/1000);
+  const m=Math.floor(el/60), sec=el%60;
+  document.getElementById('res-big').textContent=`${c} / ${t} ✅`;
+  document.getElementById('res-stars').textContent='⭐'.repeat(stars)+'☆'.repeat(5-stars);
+  document.getElementById('res-stats').innerHTML=
+    `<span>⏱️ Čas: ${m}:${String(sec).padStart(2,'0')}</span>`+
+    `<span>✅ Úspěšnost: ${Math.round(c/t*100)}%</span>`;
+  document.getElementById('res-history').innerHTML=S.sessHistory.map(h=>{
+    if(h.correct) return `<div class="hi-item"><span class="ico">✅</span><span>${h.q.expression} = ${h.q.answer}</span></div>`;
+    return `<div class="hi-item"><span class="ico">❌</span><span>${h.q.expression} = <span class="bad-ans">${h.ua}</span> <span class="ok-ans">✓ ${h.q.answer}</span></span></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+// 12. SETTINGS
+// ══════════════════════════════════════════════════
+function openSettings(){ showScreen('settings'); renderSettings(); }
+function renderSettings(){ renderPresets(); renderTopics(); renderGameOpts(); renderPinBtn(); renderPreview(); }
+function renderPresets(){
+  const row=document.getElementById('preset-row');
+  row.innerHTML=Object.entries(PRESETS).map(([k,p])=>
+    `<button class="preset-btn${S.preset===k?' active':''}" onclick="selPreset('${k}')">
+      <span class="pe">${p.emoji}</span><span>${p.label}</span>
+    </button>`).join('');
+  const cr=document.getElementById('custom-reset');
+  if(S.preset==='custom'&&S.lastPreset){
+    cr.classList.add('show');
+    const lp=PRESETS[S.lastPreset];
+    document.getElementById('cr-text').textContent=`✏️ Vlastní (upraveno ze ${lp?.label||S.lastPreset})`;
+    document.getElementById('btn-cr').textContent=`↩ Vrátit na ${lp?.label}`;
+    document.getElementById('btn-cr').onclick=()=>selPreset(S.lastPreset);
+  } else { cr.classList.remove('show'); }
+}
+function selPreset(k){ applyPreset(k); renderSettings(); renderHome(); }
+function renderTopics(){
+  const list=document.getElementById('topics-list');
+  list.innerHTML=Object.entries(TOPICS).map(([key,td])=>{
+    const cfg=S.config[key]||{enabled:false};
+    const en=cfg.enabled, exp=S.expandedTopic===key;
+    const sum=topicSummary(key,cfg,td);
+    return `<div class="topic-row${en?' on':''}" id="tr-${key}">
+      <div class="topic-hdr" onclick="toggleExpand('${key}')">
+        <span class="topic-ico">${td.emoji}</span>
+        <span class="topic-lbl">${td.label}</span>
+        <span class="topic-sum">${sum}</span>
+        <div class="tgl-wrap" onclick="event.stopPropagation()">
+          <input type="checkbox" class="tgl-inp" id="tgl-${key}" ${en?'checked':''} onchange="toggleTopic('${key}',this.checked)">
+          <label class="tgl-lbl" for="tgl-${key}"></label>
+        </div>
+      </div>
+      <div class="topic-detail${exp?' open':''}" id="td-${key}">${topicDetail(key,td,cfg)}</div>
+    </div>`;
+  }).join('');
+}
+function topicSummary(key,cfg,td){
+  if(!cfg.enabled) return '';
+  if(td.config==='tables') return cfg.tables?.length?`Násobky: ${[...cfg.tables].sort((a,b)=>a-b).join(',')}`:'Žádné';
+  if(td.levels&&cfg.level) return td.levels[cfg.level]?.label||cfg.level;
+  return '';
+}
+function topicDetail(key,td,cfg){
+  if(td.config==='tables'){
+    const tbls=cfg.tables||[];
+    return `<div class="detail-lbl">Násobky:</div>
+      <div class="tables-grid">${[1,2,3,4,5,6,7,8,9,10].map(n=>
+        `<button class="tbl-btn${tbls.includes(n)?' active':''}" onclick="toggleTable('${key}',${n})">${n}</button>`
+      ).join('')}</div>
+      <div class="quick-btns">
+        <button class="btn-quick" onclick="setTables('${key}',[2,5,10])">Lehká (2,5,10)</button>
+        <button class="btn-quick" onclick="setTables('${key}',[1,2,3,4,5,6,7,8,9,10])">Vše</button>
+        <button class="btn-quick" onclick="setTables('${key}',[])">Žádné</button>
+      </div>`;
+  }
+  if(td.levels){
+    return `<div class="detail-lbl">Úroveň:</div>
+      <div class="level-grid">${Object.entries(td.levels).map(([lk,lv])=>
+        `<button class="level-btn${cfg.level===lk?' active':''}" onclick="setLevel('${key}','${lk}')">${lv.label}</button>`
+      ).join('')}</div>`;
+  }
+  return '';
+}
+function toggleExpand(key){ S.expandedTopic=S.expandedTopic===key?null:key; renderTopics(); }
+function toggleTopic(key,en){
+  updateTopicCfg(key,{enabled:en});
+  if(en&&S.expandedTopic!==key) S.expandedTopic=key;
+  else if(!en&&S.expandedTopic===key) S.expandedTopic=null;
+  renderTopics(); renderPresets(); renderPreview(); renderHome();
+}
+function setLevel(key,level){ updateTopicCfg(key,{level}); renderTopics(); renderPresets(); }
+function toggleTable(key,n){
+  const curr=S.config[key]?.tables||[];
+  const nt=curr.includes(n)?curr.filter(t=>t!==n):[...curr,n];
+  updateTopicCfg(key,{tables:nt}); renderTopics(); renderPresets(); renderPreview();
+}
+function setTables(key,tables){ updateTopicCfg(key,{tables}); renderTopics(); renderPresets(); renderPreview(); }
+function renderGameOpts(){
+  document.getElementById('opt-im').innerHTML=
+    [{v:'auto',l:'🔀 Dle tématu'},{v:'numeric',l:'✏️ Jen psát'},{v:'choice',l:'🔘 Výběr'}].map(o=>
+    `<button class="opt-btn${S.inputMode===o.v?' active':''}" onclick="setSetting('inputMode','${o.v}')">${o.l}</button>`).join('');
+  document.getElementById('opt-tl').innerHTML=[5,10,15,20].map(v=>
+    `<button class="opt-btn${S.testLength===v?' active':''}" onclick="setSetting('testLength',${v})">${v}</button>`).join('');
+  document.getElementById('opt-mt').innerHTML=[1,2,3].map(v=>
+    `<button class="opt-btn${S.maxTries===v?' active':''}" onclick="setSetting('maxTries',${v})">${v}</button>`).join('');
+  document.getElementById('opt-ad').innerHTML=
+    [{v:2,l:'2s'},{v:3,l:'3s'},{v:5,l:'5s'},{v:null,l:'Ručně'}].map(o=>
+    `<button class="opt-btn${S.autoDelay===o.v?' active':''}" onclick="setSetting('autoDelay',${JSON.stringify(o.v)})">${o.l}</button>`).join('');
+}
+function setSetting(key,val){
+  S[key]=val; if(key==='autoDelay') S.autoAdvance=(val!==null);
+  sv(key,val); renderGameOpts();
+}
+function renderPinBtn(){
+  document.getElementById('btn-pin-action').textContent=
+    S.parentPinHash?'🔑 Změnit / Odstranit PIN':'🔑 Nastavit rodičovský PIN';
+}
+function renderPreview(){
+  const en=getEnabled();
+  const el=document.getElementById('preview-box');
+  if(!en.length){
+    el.innerHTML='⚠️ Žádné téma není zapnuté — VÝUKA a TEST jsou neaktivní.';
+    el.style.borderColor='var(--color-wrong)';
+  } else {
+    el.innerHTML='ℹ️ Procvičujeme: '+en.map(t=>{
+      if(t.config==='tables') return `${t.label} (${[...t.tables].sort((a,b)=>a-b).join(',')})`;
+      return t.label;
+    }).join(' · ');
+    el.style.borderColor='var(--border)';
+  }
+}
+function doResetScore(){
+  if(confirm('Opravdu smazat veškeré skóre? Tuto akci nelze vrátit.')){
+    S.score=0; S.badges=[]; sv('score',0); sv('badges',[]);
+    renderHome(); alert('Skóre bylo smazáno.');
+  }
+}
+function handlePinAction(){
+  if(S.parentPinHash){
+    if(confirm('Odstranit PIN? (Zrušit = změnit PIN)')){
+      S.parentPinHash=null; sv('parentPinHash',null); renderPinBtn(); alert('PIN byl odstraněn.');
+    } else { openPinDlg('set-new','🔑 Zadej nový PIN',null); }
+  } else { openPinDlg('set-new','🔑 Zadej nový PIN',null); }
+}
+document.getElementById('btn-home-settings').addEventListener('click',()=>{
+  if(!S.parentPinHash){ openSettings(); }
+  else { openPinDlg('verify','🔐 Zadej rodičovský PIN',openSettings); }
+});
+
+// ══════════════════════════════════════════════════
+// 13. PIN
+// ══════════════════════════════════════════════════
+let PS={mode:'verify',buf:'',onOk:null,first:''};
+async function hashPin(pin){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pin+'matysek_salt'));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function openPinDlg(mode,title,onOk){
+  PS={mode,buf:'',onOk,first:''};
+  document.getElementById('pin-title').textContent=title;
+  document.getElementById('pin-err').textContent='';
+  updPinDots(); document.getElementById('pin-overlay').classList.add('open');
+}
+function closePinDlg(){ document.getElementById('pin-overlay').classList.remove('open'); PS={mode:'verify',buf:'',onOk:null,first:''}; }
+function updPinDots(){ for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('on',i<PS.buf.length); }
+function pIn(d){ if(PS.buf.length>=4)return; PS.buf+=d; updPinDots(); if(PS.buf.length===4) setTimeout(procPin,200); }
+function pDel(){ PS.buf=PS.buf.slice(0,-1); updPinDots(); }
+async function procPin(){
+  const pin=PS.buf;
+  if(PS.mode==='verify'){
+    const h=await hashPin(pin);
+    if(h===S.parentPinHash){ closePinDlg(); if(PS.onOk) PS.onOk(); }
+    else { document.getElementById('pin-err').textContent='Špatný PIN, zkus znovu.'; PS.buf=''; updPinDots(); }
+  } else if(PS.mode==='set-new'){
+    PS.first=pin; PS.buf=''; updPinDots();
+    document.getElementById('pin-title').textContent='🔑 Zopakuj PIN';
+    document.getElementById('pin-err').textContent='';
+    PS.mode='confirm';
+  } else if(PS.mode==='confirm'){
+    if(pin===PS.first){
+      const h=await hashPin(pin); S.parentPinHash=h; sv('parentPinHash',h);
+      closePinDlg(); renderPinBtn(); alert('PIN byl nastaven!');
+    } else {
+      document.getElementById('pin-err').textContent='PINy se neshodují, zkus znovu.';
+      PS.buf=''; PS.first=''; PS.mode='set-new'; updPinDots();
+      document.getElementById('pin-title').textContent='🔑 Zadej nový PIN';
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════
+// 14. VIZUÁLNÍ POMŮCKY
+// ══════════════════════════════════════════════════
+function drawDots(canvas,a,b,op){
+  const dpr=window.devicePixelRatio||1;
+  const pw=canvas.parentElement.clientWidth-24;
+  const ph=canvas.parentElement.clientHeight-16;
+  const W=Math.min(pw,380), H=Math.min(ph,200);
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
+  const total=Math.max(a+(op==='+'?b:0),a,1);
+  const r=Math.min(16,W/(total+2)/2,H/4.5);
+  const gap=r*2.6;
+  const colors={A:'#4a90d9',B:'#5cb85c',X:'#e05c6a',fade:'#dde4f0'};
+  const startX=(W-(total-1)*gap)/2, midY=H*.42;
+  // draw A dots
+  for(let i=0;i<a;i++){
+    ctx.beginPath(); ctx.arc(startX+i*gap,midY,r,0,Math.PI*2);
+    ctx.fillStyle=colors.A; ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.08)'; ctx.lineWidth=1; ctx.stroke();
+  }
+  if(op==='+'){
+    for(let i=0;i<b;i++){
+      ctx.beginPath(); ctx.arc(startX+(a+i)*gap,midY,r,0,Math.PI*2);
+      ctx.fillStyle=colors.B; ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,.08)'; ctx.lineWidth=1; ctx.stroke();
+    }
+  } else if(op==='−'){
+    for(let i=0;i<b;i++){
+      const x=startX+(a-1-i)*gap;
+      ctx.beginPath(); ctx.arc(x,midY,r,0,Math.PI*2);
+      ctx.fillStyle=colors.fade; ctx.fill();
+      ctx.strokeStyle=colors.X; ctx.lineWidth=2; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.strokeStyle=colors.X; ctx.lineWidth=2;
+      ctx.moveTo(x-r*.55,midY-r*.55); ctx.lineTo(x+r*.55,midY+r*.55);
+      ctx.moveTo(x+r*.55,midY-r*.55); ctx.lineTo(x-r*.55,midY+r*.55); ctx.stroke();
+    }
+  }
+  // labels
+  ctx.font=`bold ${Math.max(12,Math.floor(r*.9))}px Nunito,sans-serif`;
+  ctx.textAlign='center'; ctx.fillStyle='#2d3a52';
+  const labY=midY+r+14;
+  if(a>0) ctx.fillText(String(a),startX+(a*.5-.5)*gap,labY);
+  if(b>0&&op==='+') ctx.fillText(String(b),startX+(a+b*.5-.5)*gap,labY);
+}
+
+function makeNumLineSVG(a,b,result,op){
+  const W=340,H=100,maxV=Math.max(result+5,20),minV=0;
+  const sc=(W-40)/(maxV-minV), toX=v=>20+(v-minV)*sc, midY=55;
+  const step=maxV<=20?1:maxV<=50?5:10;
+  let ticks='';
+  for(let v=0;v<=maxV;v+=step){
+    const x=toX(v),hi=(v===a||v===result);
+    ticks+=`<line x1="${x}" y1="${midY-4}" x2="${x}" y2="${midY+4}"
+      stroke="${hi?'#4a90d9':'#b2bec3'}" stroke-width="${hi?2.5:1}"/>`;
+    if(v%( step*2 )===0||hi)
+      ticks+=`<text x="${x}" y="${midY+18}" text-anchor="middle" font-size="10"
+        font-family="Nunito" fill="${hi?'#2d3a52':'#7a88a8'}"
+        font-weight="${hi?700:400}">${v}</text>`;
+  }
+  const arc=op==='+'
+    ?`<path d="M${toX(a)} ${midY} Q${toX(a+b/2)} ${midY-30} ${toX(result)} ${midY}"
+        stroke="#5cb85c" stroke-width="2.5" fill="none" marker-end="url(#arr)"/>`
+    :`<path d="M${toX(a)} ${midY} Q${toX(a-b/2)} ${midY-30} ${toX(result)} ${midY}"
+        stroke="#e05c6a" stroke-width="2.5" fill="none" marker-end="url(#arr2)"/>`;
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('width','100%'); svg.style.maxWidth=W+'px';
+  svg.innerHTML=`<defs>
+    <marker id="arr"  markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0L0,6L8,3z" fill="#5cb85c"/></marker>
+    <marker id="arr2" markerWidth="8" markerHeight="8" refX="2" refY="3" orient="auto"><path d="M8,0L8,6L0,3z" fill="#e05c6a"/></marker>
+  </defs>
+  <line x1="20" y1="${midY}" x2="${W-10}" y2="${midY}" stroke="#b2bec3" stroke-width="2"/>
+  ${ticks}${arc}
+  <circle cx="${toX(a)}" cy="${midY}" r="6" fill="#4a90d9"/>
+  <circle cx="${toX(result)}" cy="${midY}" r="8" fill="none" stroke="#5cb85c" stroke-width="2.5"/>
+  <circle cx="${toX(result)}" cy="${midY}" r="4" fill="#5cb85c"/>`;
+  return svg;
+}
+
+function makeMultTableSVG(tableNum,mult){
+  const sz=30,n=10,W=sz*(n+1)+2,H=sz*(n+1)+2;
+  let cells='';
+  for(let r=0;r<=n;r++) for(let c=0;c<=n;c++){
+    const x=c*sz,y=r*sz;
+    let fill='#f7f9ff',tc='#7a88a8',fw=400;
+    if(r===tableNum&&c===mult){fill='#5cb85c';tc='white';fw=700;}
+    else if(r===tableNum||c===mult){fill='rgba(255,179,71,.25)';tc='#6b5000';fw=700;}
+    else if(r===0||c===0){fill='#e8f0ff';tc='#4a90d9';fw=700;}
+    const val=r===0?(c===0?'×':c):(c===0?r:r*c);
+    if(r>0||c>0)
+      cells+=`<rect x="${x}" y="${y}" width="${sz-1}" height="${sz-1}" fill="${fill}" rx="3"/>
+        <text x="${x+sz/2}" y="${y+sz*.68}" text-anchor="middle" font-size="10.5"
+          font-family="Nunito" fill="${tc}" font-weight="${fw}">${val}</text>`;
+  }
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('width','100%'); svg.style.maxWidth=Math.min(W,340)+'px';
+  svg.innerHTML=cells; return svg;
+}
+
+function makeFracSVG(numer,denom){
+  const cx=85,cy=80,r=68,TWO_PI=Math.PI*2;
+  let slices='';
+  for(let i=0;i<denom;i++){
+    const s=-Math.PI/2+(i/denom)*TWO_PI, e=-Math.PI/2+((i+1)/denom)*TWO_PI;
+    const x1=cx+r*Math.cos(s),y1=cy+r*Math.sin(s),x2=cx+r*Math.cos(e),y2=cy+r*Math.sin(e);
+    const lg=1/denom>.5?1:0, fill=i<numer?'#ffb347':'#f0f6ff';
+    slices+=`<path d="M${cx},${cy}L${x1},${y1}A${r},${r} 0 ${lg} 1 ${x2},${y2}Z" fill="${fill}" stroke="#fff" stroke-width="2"/>`;
+  }
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 170 170'); svg.setAttribute('width','150'); svg.setAttribute('height','150');
+  svg.innerHTML=slices+`<text x="85" y="162" text-anchor="middle" font-size="15" font-family="Nunito" fill="#2d3a52" font-weight="700">${numer} / ${denom}</text>`;
+  return svg;
+}
+
+// ══════════════════════════════════════════════════
+// 15. KONFETY (z příručky Appendix A)
+// ══════════════════════════════════════════════════
+function launchConfetti(){
+  const canvas=document.getElementById('confetti-canvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const colors=['#e05c6a','#4a90d9','#ffb347','#5cb85c','#9b59b6','#1abc9c'];
+  const particles=Array.from({length:120},()=>({
+    x:Math.random()*canvas.width,
+    y:Math.random()*-canvas.height*.6,
+    vx:(Math.random()-.5)*5,
+    vy:Math.random()*5+2,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    size:Math.random()*10+5,
+    spin:Math.random()*360,
+    spinSpeed:(Math.random()-.5)*9,
+    isRect:Math.random()<.5,
+  }));
+  let frame;
+  (function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let alive=false;
+    for(const p of particles){
+      p.x+=p.vx; p.y+=p.vy; p.spin+=p.spinSpeed; p.vy+=.06;
+      if(p.y<canvas.height+30) alive=true;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin*Math.PI/180); ctx.fillStyle=p.color;
+      if(p.isRect) ctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2);
+      else{ ctx.beginPath(); ctx.arc(0,0,p.size/2,0,Math.PI*2); ctx.fill(); }
+      ctx.restore();
+    }
+    if(alive) frame=requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  })();
+}
+
+// ══════════════════════════════════════════════════
+// 16. INIT
+// ══════════════════════════════════════════════════
+loadAll();
+setGradeColor();
+renderHome();
+</script>
+</body>
+</html>

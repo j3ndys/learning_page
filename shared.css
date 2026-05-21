@@ -1,0 +1,90 @@
+/* ═══════════════════════════════════════════════════════════════
+   shared.css · Výukové aplikace · Design System
+   ───────────────────────────────────────────────────────────────
+   Tento soubor definuje sdílenou paletu a základní komponenty.
+   Moduly (math.html, clock.html…) mají CSS inline, ale sdílejí
+   stejné hodnoty proměnných. shared.css primárně používá index.html.
+
+   Konvence proměnných (obě varianty jsou záměrně ekvivalentní):
+     Dlouhá (math.html):  --bg, --panel, --panel-2, --border, --text, --text-muted
+     Krátká (clock.html): --bg, --panel, --p2,      --brd,    --txt,  --mut
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700;800&display=swap');
+
+/* ── PROMĚNNÉ ── */
+:root {
+  /* Paleta pozadí & panelů */
+  --bg:       #fef9f0;
+  --panel:    #ffffff;
+  --panel-2:  #f0f6ff;
+  --p2:       #f0f6ff;      /* alias pro clock.html kompatibilitu */
+
+  /* Okraje & text */
+  --border:   #dde4f0;
+  --brd:      #dde4f0;      /* alias */
+  --text:     #2d3a52;
+  --txt:      #2d3a52;      /* alias */
+  --text-muted: #7a88a8;
+  --mut:      #7a88a8;      /* alias */
+
+  /* Funkční barvy */
+  --correct:  #5cb85c;
+  --wrong:    #e05c6a;
+  --hint:     #ffb347;
+  --blue:     #4a90d9;
+  --ok:       #5cb85c;      /* alias */
+  --warn:     #ffb347;      /* alias */
+
+  /* Barvy modulů (accent) */
+  --clr-math:  #5cb85c;     /* Matematika – zelená (Matýsek) */
+  --clr-clock: #4a90d9;     /* Hodiny – modrá */
+
+  /* Písma */
+  --fh: 'Baloo 2', cursive;
+  --fb: 'Nunito', sans-serif;
+  --font-display: 'Baloo 2', cursive;
+  --font-body:    'Nunito', sans-serif;
+
+  /* Typografie (fluid) */
+  --text-label:   clamp(11px, 1.5vw, 14px);
+  --text-body:    clamp(14px, 2vw,   18px);
+  --text-ui:      clamp(16px, 2.5vw, 22px);
+  --text-heading: clamp(20px, 3.5vw, 32px);
+
+  /* Layout */
+  --radius:  16px;
+  --r:       16px;          /* alias */
+  --shadow:  0 4px 22px rgba(74,100,180,0.12);
+  --sh:      0 4px 22px rgba(74,100,180,0.12); /* alias */
+  --shadow-card: 0 8px 36px rgba(74,100,180,0.16);
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── TLAČÍTKO ZPĚT DO ROZCESTNÍKU ── */
+/* Použití: <a href="index.html" class="btn-back-index">← Rozcestník</a> */
+.btn-back-index {
+  font-family: var(--fb);
+  font-size: var(--text-label);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 6px 14px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  background: var(--panel);
+  transition: all .15s;
+  touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.btn-back-index:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--panel-2);
+}

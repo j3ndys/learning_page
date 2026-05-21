@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Učíme se číst čas</title>
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAABhklEQVRYhe2WvU7DMBSFT8ILdGGChxAPwMKCxMLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsI">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hodiny">
+<meta name="theme-color" content="#1a2340">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════
+   DESIGN SYSTÉM — Učíme se číst čas
+   ══════════════════════════════════════════════════════ */
+:root {
+  --H:   #e05c6a;   /* hodiny / červená  */
+  --M:   #4a90d9;   /* minuty / modrá    */
+  --ok:  #5cb85c;
+  --warn:#ffb347;
+
+  --bg:    #f5f7fb;
+  --card:  #ffffff;
+  --side:  #f0f4fc;
+  --brd:   #dde4f0;
+  --txt:   #2d3a52;
+  --mut:   #7a88a8;
+
+  --r:  14px;
+  --sh: 0 2px 16px rgba(74,100,180,.10);
+  --fh: 'Baloo 2', cursive;
+  --fb: 'Nunito', sans-serif;
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100dvh; overflow: hidden; }
+body {
+  font-family: var(--fb);
+  color: var(--txt);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
+}
+button, select, input { font-family: inherit; touch-action: manipulation; }
+
+/* ══════════════════════════════════════════════════════
+   TOPBAR
+   ══════════════════════════════════════════════════════ */
+.topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 48px;
+  background: var(--card);
+  border-bottom: 1px solid var(--brd);
+  box-shadow: var(--sh);
+}
+.topbar-logo {
+  font-family: var(--fh);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--H);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+}
+.topbar-logo span { color: var(--M); }
+
+.stars-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff8e7;
+  border: 1.5px solid #ffcc66;
+  border-radius: 50px;
+  padding: 3px 10px;
+  font-size: .82rem;
+  font-weight: 800;
+  color: #b8860b;
+}
+
+.tbtn {
+  border: 1.5px solid var(--brd);
+  background: var(--side);
+  border-radius: 50px;
+  padding: 4px 11px;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--mut);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.tbtn:hover { border-color: var(--M); color: var(--M); background: #e8f0ff; }
+
+.btn-back {
+  font-size: .78rem; font-weight: 700;
+  color: var(--mut); text-decoration: none;
+  padding: 4px 11px;
+  border: 1.5px solid var(--brd);
+  border-radius: 50px;
+  background: var(--side);
+  transition: all .15s;
+  display: inline-flex; align-items: center;
+  white-space: nowrap;
+}
+.btn-back:hover { border-color: var(--M); color: var(--M); }
+
+/* ══════════════════════════════════════════════════════
+   SETTINGS PANEL (collapsible)
+   ══════════════════════════════════════════════════════ */
+#set-wrap {
+  flex-shrink: 0;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height .28s ease;
+  background: #fffbf0;
+  border-bottom: 1.5px solid #ffe0a0;
+}
+#set-wrap.open { max-height: 180px; }
+.set-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: center;
+  padding: 8px 14px;
+}
+.set-row { display: flex; align-items: center; gap: 7px; }
+.set-row label { font-size: .8rem; font-weight: 700; cursor: pointer; }
+.sw { position: relative; display: inline-block; width: 40px; height: 22px; }
+.sw input { opacity: 0; width: 0; height: 0; }
+.sw-sl { position: absolute; cursor: pointer; inset: 0; background: #ccd; border-radius: 50px; transition: .25s; }
+.sw-sl::before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .25s; }
+input:checked + .sw-sl { background: var(--M); }
+input:checked + .sw-sl::before { transform: translateX(18px); }
+.set-num { display: flex; align-items: center; gap: 4px; }
+.set-num button {
+  width: 24px; height: 24px;
+  border: 1.5px solid var(--brd); border-radius: 8px;
+  background: white; color: var(--txt); font-size: .95rem; font-weight: 900;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.set-num button:hover { background: var(--M); color: #fff; border-color: var(--M); }
+.set-num span { min-width: 24px; text-align: center; font-weight: 800; font-size: .88rem; }
+
+/* ══════════════════════════════════════════════════════
+   TABS
+   ══════════════════════════════════════════════════════ */
+.tabs {
+  flex-shrink: 0;
+  display: flex;
+  gap: 4px;
+  padding: 7px 14px 0;
+  background: var(--card);
+  border-bottom: 2px solid var(--brd);
+}
+.tab {
+  font-family: var(--fh);
+  font-size: .9rem;
+  font-weight: 700;
+  padding: 6px 18px;
+  border-radius: var(--r) var(--r) 0 0;
+  border: 1.5px solid transparent;
+  border-bottom: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--mut);
+  transition: all .15s;
+  position: relative;
+  bottom: -2px;
+}
+.tab.on {
+  background: var(--bg);
+  border-color: var(--brd);
+  color: var(--txt);
+  border-bottom-color: var(--bg);
+}
+.tab:hover:not(.on) { color: var(--txt); background: #edf0ff; }
+
+/* ══════════════════════════════════════════════════════
+   MAIN AREA
+   ══════════════════════════════════════════════════════ */
+main {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+.mode { display: none; flex: 1 1 0; min-height: 0; flex-direction: column; }
+.mode.on { display: flex; }
+
+/* ══════════════════════════════════════════════════════
+   CLOCK PANEL — shared between all modes
+   The clock-frame fills its parent via position:absolute.
+   ══════════════════════════════════════════════════════ */
+.clk-panel {
+  /* Flex column: label (shrink) → clock frame (grow) → controls (shrink) */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+.clk-lbl {
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  text-align: center;
+  flex-shrink: 0;
+}
+.clk-frame {
+  /* Takes remaining height — SVG fills via position:absolute */
+  flex: 1 1 0;
+  min-height: 0;
+  position: relative;
+}
+.clk-frame svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: pointer;
+}
+/* hand control buttons */
+.hand-ctrl {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.hc {
+  font-family: var(--fh);
+  font-weight: 800;
+  font-size: clamp(.6rem, 1.3vw, .82rem);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: all .13s;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+.hc.hh { background: #fde8ea; color: var(--H); }
+.hc.hh:hover { background: var(--H); color: #fff; }
+.hc.hm { background: #e4eeff; color: var(--M); }
+.hc.hm:hover { background: var(--M); color: #fff; }
+.hc:active { transform: scale(.92); }
+
+/* ══════════════════════════════════════════════════════
+   LEARN MODE
+   Left ~62%: analog clock  |  Right ~38%: digital
+   ══════════════════════════════════════════════════════ */
+.learn-layout {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  gap: 10px;
+}
+/* Analog side */
+.learn-analog {
+  flex: 62 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1.5px solid var(--brd);
+  box-shadow: var(--sh);
+  padding: 10px;
+  gap: 6px;
+}
+/* Digital side */
+.learn-digital {
+  flex: 38 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1.5px solid var(--brd);
+  box-shadow: var(--sh);
+  padding: 16px 12px;
+}
+/* Dark digital display */
+.dig-disp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a2340;
+  border-radius: 14px;
+  padding: 16px 22px;
+  box-shadow: 0 6px 24px rgba(26,35,64,.4);
+}
+.dg { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.db {
+  background: #2a3660;
+  border: none;
+  border-radius: 7px;
+  color: #7ab0f8;
+  cursor: pointer;
+  width: clamp(32px,4.5vw,52px);
+  height: clamp(22px,2.8vh,34px);
+  font-size: clamp(.85rem,1.7vw,1.2rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s;
+}
+.db:hover { background: var(--M); color: #fff; }
+.db:active { transform: scale(.92); }
+.dv {
+  font-family: 'Courier New', monospace;
+  font-size: clamp(2rem,5vw,4rem);
+  font-weight: 700;
+  min-width: clamp(40px,5.5vw,72px);
+  text-align: center;
+  line-height: 1;
+}
+.dv.hv { color: var(--H); }
+.dv.mv { color: var(--M); }
+.dc { font-size: clamp(1.8rem,4.5vw,3.8rem); color: #6a88c0; font-weight: 900; align-self: center; padding-bottom: 4px; line-height: 1; }
+.time-pill {
+  font-family: var(--fh);
+  font-size: clamp(.84rem,1.8vw,1.18rem);
+  font-weight: 700;
+  text-align: center;
+  color: var(--txt);
+  background: var(--side);
+  border: 1.5px solid var(--brd);
+  border-radius: 50px;
+  padding: 7px 18px;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 280px;
+}
+
+/* ══════════════════════════════════════════════════════
+   PRACTICE MODE
+   ══════════════════════════════════════════════════════ */
+.prac-layout {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Toolbar */
+.prac-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.psel {
+  font-family: var(--fb);
+  font-weight: 700;
+  font-size: .82rem;
+  border: 1.5px solid var(--brd);
+  border-radius: 50px;
+  padding: 6px 28px 6px 12px;
+  background: var(--card);
+  cursor: pointer;
+  color: var(--txt);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M0 0l5 7 5-7z' fill='%237a88a8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.psel:focus { outline: 2px solid var(--M); outline-offset: 2px; }
+.btn-newq {
+  font-family: var(--fh);
+  font-weight: 800;
+  font-size: .88rem;
+  background: var(--M);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: all .15s;
+  box-shadow: 0 3px 12px rgba(74,144,217,.30);
+}
+.btn-newq:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* Practice content area */
+.prac-content {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  gap: 10px;
+}
+
+/* ── d2a layout ──
+   Sidebar (compact info) LEFT  |  Clock (dominant) RIGHT */
+.d2a-sidebar {
+  flex: 0 0 auto;
+  width: clamp(140px, 20vw, 200px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 10px;
+  background: var(--side);
+  border-radius: var(--r);
+  border: 1.5px solid var(--brd);
+  box-shadow: var(--sh);
+}
+.d2a-clock {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1.5px solid var(--brd);
+  box-shadow: var(--sh);
+  padding: 10px;
+  gap: 6px;
+}
+
+/* ── a2d layout ──
+   Clock LEFT (square-ish)  |  Input RIGHT */
+.a2d-clock {
+  /* Width tracks height so the clock is as square as possible */
+  flex: 0 0 auto;
+  width: min(50%, 50vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1.5px solid var(--brd);
+  box-shadow: var(--sh);
+  padding: 10px;
+  gap: 6px;
+}
+.a2d-input {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 12px;
+  background: var(--card);
+  border-radius: var(--r);
+  border: 1.5px solid var(--brd);
+  box-shadow: var(--sh);
+  overflow-y: auto;
+}
+
+/* ── Sidebar content ── */
+.task-label {
+  font-family: var(--fh);
+  font-size: clamp(.78rem,1.8vw,1rem);
+  font-weight: 700;
+  color: var(--mut);
+  text-align: center;
+}
+.task-time {
+  font-family: 'Courier New', monospace;
+  font-size: clamp(1.8rem,4vw,2.8rem);
+  font-weight: 900;
+  color: var(--H);
+  line-height: 1;
+  text-align: center;
+}
+.task-ampm {
+  font-family: var(--fh);
+  font-size: clamp(.82rem,1.8vw,1.05rem);
+  font-weight: 800;
+  color: var(--M);
+  text-align: center;
+}
+.task-desc {
+  font-family: var(--fh);
+  font-size: clamp(.78rem,1.7vw,.98rem);
+  font-weight: 700;
+  color: var(--txt);
+  background: var(--card);
+  border: 1.5px solid var(--brd);
+  border-radius: 50px;
+  padding: 5px 12px;
+  text-align: center;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prac-prompt {
+  font-family: var(--fh);
+  font-size: clamp(.85rem,2vw,1.1rem);
+  font-weight: 800;
+  text-align: center;
+  color: var(--txt);
+}
+
+/* Action buttons */
+.btn-chk {
+  width: 100%;
+  font-family: var(--fh);
+  font-weight: 800;
+  font-size: clamp(.8rem,1.8vw,1rem);
+  background: var(--ok);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all .15s;
+  box-shadow: 0 3px 12px rgba(92,184,92,.3);
+}
+.btn-chk:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn-skip {
+  font-family: var(--fh);
+  font-weight: 700;
+  font-size: .8rem;
+  background: none;
+  color: var(--mut);
+  border: 1.5px solid var(--brd);
+  border-radius: 50px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-skip:hover { background: var(--warn); color: #fff; border-color: var(--warn); }
+
+/* Feedback */
+.fb-row {
+  flex-shrink: 0;
+  text-align: center;
+}
+.fb {
+  display: inline-block;
+  font-family: var(--fh);
+  font-size: .9rem;
+  font-weight: 800;
+  padding: 5px 14px;
+  border-radius: 9px;
+  min-height: 30px;
+  transition: all .25s;
+}
+.fb.ok  { background: #e6f9e6; color: #2e7d32; }
+.fb.err { background: #fff0f0; color: #c0392b; }
+.countdown { display: inline-block; background: rgba(0,0,0,.12); border-radius: 50px; padding: 1px 8px; font-size: .85em; margin-left: 6px; }
+
+/* ══════════════════════════════════════════════════════
+   DIGITAL INPUT WIDGET (a2d mode)
+   ══════════════════════════════════════════════════════ */
+.diw { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.inp-hint { font-size: .72rem; font-weight: 700; color: var(--mut); display: flex; gap: 10px; }
+.sp-row { display: flex; align-items: center; gap: 5px; }
+.sgrp { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.sbtn {
+  width: clamp(36px,5.5vw,50px);
+  height: clamp(24px,3.2vh,34px);
+  border: none;
+  border-radius: 8px;
+  font-size: clamp(.85rem,1.8vw,1.1rem);
+  font-weight: 900;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .1s, transform .08s;
+}
+.sbtn.up, .sbtn.dn { background: #e4eeff; color: var(--M); }
+.sbtn.hs { background: #fde8ea !important; color: var(--H) !important; }
+.sbtn:hover { filter: brightness(.9); }
+.sbtn:active { transform: scale(.92); }
+.sdsp {
+  font-family: 'Courier New', monospace;
+  font-size: clamp(1.5rem,3.5vw,2.2rem);
+  font-weight: 700;
+  min-width: clamp(50px,7vw,70px);
+  text-align: center;
+  line-height: 1;
+  background: #1a2340;
+  border-radius: 9px;
+  padding: clamp(5px,.9vh,8px) 6px;
+  border: 3px solid transparent;
+  transition: border-color .15s;
+  cursor: pointer;
+}
+.sdsp.hd { color: var(--H); border-color: #3d2020; }
+.sdsp.md { color: var(--M); border-color: #1a2d4a; }
+.sdsp.act { border-color: #fff !important; }
+.scol { font-size: clamp(1.5rem,3.5vw,2.2rem); font-weight: 900; color: #6a80b0; padding-bottom: 2px; }
+.ampm-row { display: flex; gap: 6px; }
+.ampm-btn {
+  font-family: var(--fh); font-weight: 800; font-size: .9rem;
+  border: 1.5px solid var(--brd); border-radius: 50px;
+  padding: 5px 14px; cursor: pointer;
+  background: var(--card); color: var(--mut); transition: all .14s;
+}
+.ampm-btn.sel { background: var(--H); color: #fff; border-color: var(--H); }
+/* Numpad */
+.npg { display: grid; grid-template-columns: repeat(3, 54px); gap: 6px; }
+.nk {
+  width: 54px; height: 54px;
+  font-family: var(--fh);
+  font-size: 1.12rem;
+  font-weight: 800;
+  background: var(--card);
+  border: 1.5px solid var(--brd);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background .1s, transform .08s;
+  color: var(--txt);
+}
+.nk:hover { background: #e8f0ff; border-color: var(--M); }
+.nk:active { transform: scale(.91); }
+.nk.del { background: #fff0f0; border-color: #f5c0c0; color: #c0392b; font-size: .9rem; }
+.nk.del:hover { background: #fcd8d8; }
+.nk.ok { background: var(--ok); color: #fff; border-color: var(--ok); font-size: .84rem; }
+.nk.ok:hover { filter: brightness(1.08); }
+
+/* ── DRUM PICKER ── */
+.drum-overlay { position:fixed; inset:0; z-index:900; }
+.drum-picker {
+  position:fixed; z-index:901;
+  background:#1a2340; border-radius:16px; overflow:hidden; width:110px;
+  box-shadow:0 12px 40px rgba(0,0,0,.55), 0 0 0 1.5px rgba(255,255,255,.10);
+}
+.drum-inner { position:relative; }
+.drum-center-line {
+  position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
+  height:48px;
+  background:rgba(255,255,255,.07);
+  border-top:1px solid rgba(255,255,255,.18);
+  border-bottom:1px solid rgba(255,255,255,.18);
+  pointer-events:none; z-index:1;
+}
+.drum-scroll {
+  height:240px; overflow-y:scroll;
+  scroll-snap-type:y mandatory; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.drum-scroll::-webkit-scrollbar { display:none; }
+.drum-item {
+  height:48px; display:flex; align-items:center; justify-content:center;
+  font-family:'Courier New',monospace; font-size:1.05rem; font-weight:700;
+  color:rgba(255,255,255,.22); scroll-snap-align:center;
+  cursor:pointer; user-select:none; transition:color .12s, font-size .12s;
+}
+.drum-item.pad { pointer-events:none; cursor:default; }
+.drum-item.near { color:rgba(255,255,255,.50); }
+.drum-item.sel  { color:#fff; font-size:1.45rem; }
+.drum-inner::before,.drum-inner::after {
+  content:''; position:absolute; left:0; right:0; height:72px; z-index:2; pointer-events:none;
+}
+.drum-inner::before { top:0;    background:linear-gradient(to bottom,#1a2340 0%,transparent 100%); }
+.drum-inner::after  { bottom:0; background:linear-gradient(to top,   #1a2340 0%,transparent 100%); }
+/* DIW layout variants */
+.diw.with-numpad { flex-direction:row; align-items:flex-start; justify-content:center; gap:16px; }
+.diw-left  { display:flex; flex-direction:column; align-items:center; gap:8px; flex-shrink:0; }
+.diw-right { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+/* Drum hint arrow on sdsp */
+.sdsp { cursor:pointer; position:relative; }
+.sdsp::after {
+  content:'▾'; position:absolute; bottom:-10px; left:50%; transform:translateX(-50%);
+  font-size:.65rem; color:rgba(255,255,255,.30); line-height:1;
+}
+.sdsp.act::after { color:rgba(255,255,255,.65); }
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE: mobile stacks vertically
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 540px) {
+  .learn-layout { flex-direction: column; }
+  .learn-analog  { flex: 1 1 0; }
+  .learn-digital { flex: 0 0 auto; flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 10px; }
+  .prac-content  { flex-direction: column; }
+  .d2a-sidebar   { width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 8px 12px; gap: 8px; }
+  .d2a-clock     { flex: 1 1 0; }
+  .a2d-clock     { width: 100%; height: min(50vw, 240px); flex-shrink: 0; }
+}
+
+/* ══════════════════════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════════════════════ */
+#cc { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
+@keyframes blinkR { 0%,100%{opacity:1} 50%{opacity:.08} }
+@keyframes blinkB { 0%,100%{opacity:1} 50%{opacity:.08} }
+.bh { animation: blinkR .55s ease-in-out 5; }
+.bm { animation: blinkB .55s ease-in-out 5; }
+@keyframes popIn { 0%{transform:scale(0)rotate(-15deg);opacity:0} 60%{transform:scale(1.35)rotate(4deg);opacity:1} 100%{transform:scale(1)rotate(0);opacity:1} }
+.pop { animation: popIn .4s cubic-bezier(.36,.07,.19,.97) both; }
+</style>
+</head>
+<body>
+<canvas id="cc"></canvas>
+
+<!-- ══ TOPBAR ══ -->
+<header class="topbar">
+  <a href="index.html" class="btn-back">← Rozcestník</a>
+  <div class="topbar-logo">🕐 <span data-i18n="appTitle">Učíme se čas</span></div>
+  <div class="stars-pill">⭐ <span id="sc">0</span> <span data-i18n="stars">hvězdiček</span></div>
+  <button class="tbtn" id="lang-btn">🌐 EN</button>
+  <button class="tbtn" id="set-btn">⚙️ <span data-i18n="settings">Nastavení</span></button>
+</header>
+
+<!-- ══ SETTINGS ══ -->
+<div id="set-wrap">
+  <div class="set-inner">
+    <div class="set-row">
+      <label class="sw"><input type="checkbox" id="t24" checked><span class="sw-sl"></span></label>
+      <label for="t24" data-i18n="show24h">Zobrazit 24h čísla</label>
+    </div>
+    <div class="set-row">
+      <label class="sw"><input type="checkbox" id="tmin" checked><span class="sw-sl"></span></label>
+      <label for="tmin" data-i18n="showMin">Zobrazit minutová čísla</label>
+    </div>
+    <div class="set-row">
+      <label class="sw"><input type="checkbox" id="t24h-prac"><span class="sw-sl"></span></label>
+      <label for="t24h-prac" data-i18n="prac24h">Procvičovat 24h časy</label>
+    </div>
+    <div class="set-row">
+      <label data-i18n="setDelay">Auto-postup (s):</label>
+      <div class="set-num">
+        <button onclick="adjSetting('delay',-1)">−</button>
+        <span id="set-delay-val">3</span>
+        <button onclick="adjSetting('delay',1)">+</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <label data-i18n="setTries">Pokusy:</label>
+      <div class="set-num">
+        <button onclick="adjSetting('tries',-1)">−</button>
+        <span id="set-tries-val">3</span>
+        <button onclick="adjSetting('tries',1)">+</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <label class="sw"><input type="checkbox" id="tNumpad" checked><span class="sw-sl"></span></label>
+      <label for="tNumpad">Zobrazit číselník</label>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TABS ══ -->
+<nav class="tabs">
+  <button class="tab on" id="tab-learn" onclick="switchTab('learn')" data-i18n="mLearn">📖 Výuka</button>
+  <button class="tab"    id="tab-prac"  onclick="switchTab('prac')"  data-i18n="mPrac">🎯 Procvičování</button>
+</nav>
+
+<main>
+
+  <!-- ══ VÝUKA ══ -->
+  <div class="mode on" id="ml">
+    <div class="learn-layout">
+
+      <!-- Analog clock panel -->
+      <div class="learn-analog clk-panel">
+        <div class="clk-lbl" data-i18n="aClk">Analogové hodiny</div>
+        <div class="clk-frame">
+          <svg id="asvg" viewBox="0 0 320 320"></svg>
+        </div>
+        <div class="hand-ctrl">
+          <button class="hc hh" data-rep="adjL" data-part="h" data-d="-1">◀ <span data-i18n="hod">hod</span></button>
+          <button class="hc hh" data-rep="adjL" data-part="h" data-d="1"><span data-i18n="hod">hod</span> ▶</button>
+          <button class="hc hm" data-rep="adjL" data-part="m" data-d="-5">◀◀</button>
+          <button class="hc hm" data-rep="adjL" data-part="m" data-d="-1">◀ <span data-i18n="min">min</span></button>
+          <button class="hc hm" data-rep="adjL" data-part="m" data-d="1"><span data-i18n="min">min</span> ▶</button>
+          <button class="hc hm" data-rep="adjL" data-part="m" data-d="5">▶▶</button>
+        </div>
+      </div>
+
+      <!-- Digital clock panel -->
+      <div class="learn-digital">
+        <div class="clk-lbl" data-i18n="dClk">Digitální hodiny</div>
+        <div class="dig-disp">
+          <div class="dg">
+            <button class="db" data-rep="adjL" data-part="h" data-d="1">▲</button>
+            <div class="dv hv" id="dh">10</div>
+            <button class="db" data-rep="adjL" data-part="h" data-d="-1">▼</button>
+          </div>
+          <div class="dc">:</div>
+          <div class="dg">
+            <button class="db" data-rep="adjL" data-part="m" data-d="1">▲</button>
+            <div class="dv mv" id="dm">10</div>
+            <button class="db" data-rep="adjL" data-part="m" data-d="-1">▼</button>
+          </div>
+        </div>
+        <div class="time-pill" id="time-txt">–</div>
+      </div>
+
+    </div>
+  </div><!-- /výuka -->
+
+  <!-- ══ PROCVIČOVÁNÍ ══ -->
+  <div class="mode" id="mp">
+    <div class="prac-layout">
+
+      <!-- Toolbar -->
+      <div class="prac-toolbar">
+        <select class="psel" id="sub" onchange="saveSett()">
+          <option value="d2a" data-i18n-opt="subDA">Digitální → Analogové</option>
+          <option value="a2d" data-i18n-opt="subAD">Analogové → Digitální</option>
+          <option value="mix" data-i18n-opt="subMix">Mix</option>
+        </select>
+        <select class="psel" id="dif" onchange="saveSett()">
+          <option value="60"  data-i18n-opt="d1">Celé hodiny</option>
+          <option value="30"  data-i18n-opt="d2">Půlhodiny</option>
+          <option value="15"  data-i18n-opt="d3">Čtvrthodiny</option>
+          <option value="5"   data-i18n-opt="d4">Po 5 minutách</option>
+          <option value="1"   data-i18n-opt="d5">Přesný čas</option>
+        </select>
+        <button class="btn-newq" onclick="newQ()" data-i18n="newQ">Nová otázka ▶</button>
+        <div class="fb-row"><div class="fb" id="pfb"></div></div>
+      </div>
+
+      <!-- Dynamic content -->
+      <div class="prac-content" id="prow"></div>
+
+    </div>
+  </div><!-- /procvičování -->
+
+</main>
+
+<script>
+const S={
+  lang:'cs',s24:true,sMin:true,prac24h:false,showNumpad:true,stars:0,
+  pSub:'d2a',pDif:'60',pTarget:{h:0,m:0},pMode:'d2a',answered:false,
+  tries:0,autoDelay:3,maxTries:3
+};
+
+const TX={
+  cs:{
+    appTitle:'Učíme se čas',stars:'hvězdiček',settings:'Nastavení',
+    show24h:'Zobrazit 24h čísla',showMin:'Zobrazit minutová čísla',prac24h:'Procvičovat 24h časy',
+    mLearn:'📖 Výuka',mPrac:'🎯 Procvičování',
+    aClk:'Analogové hodiny',dClk:'Digitální hodiny',
+    newQ:'Nová otázka ▶',
+    subDA:'Digitální → Analogové',subAD:'Analogové → Digitální',subMix:'Mix',
+    d1:'Celé hodiny',d2:'Půlhodiny',d3:'Čtvrthodiny',d4:'Po 5 minutách',d5:'Přesný čas',
+    setA:'Nastav ručičky na:',setD:'Zapiš čas ze hodin:',
+    chk:'✔ Zkontrolovat',ok:'🎉 Výborně! Správně!',
+    err:'💡 Zkus to znovu!',errAns:'💡 Správný čas byl',skip:'Přeskočit →',
+    setDelay:'Auto-postup (s):',setTries:'Pokusy:',
+    hod:'hod',min:'min',hLbl:'Hodiny',mLbl:'Minuty',tabLbl:'min →',
+    am:'Dopoledne',pm:'Odpoledne',
+    tl:(h,m)=>{const x=h%12||12,n=(x%12)+1;if(!m)return`${x} hodin přesně`;if(m===30)return`půl ${n}`;if(m===15)return`čtvrt na ${n}`;if(m===45)return`tři čtvrtě na ${n}`;return`${x}:${String(m).padStart(2,'0')}`;}
+  },
+  en:{
+    appTitle:'Learn the Clock',stars:'stars',settings:'Settings',
+    show24h:'Show 24h numbers',showMin:'Show minute numbers',prac24h:'Practise 24h times',
+    mLearn:'📖 Learning',mPrac:'🎯 Practice',
+    aClk:'Analog Clock',dClk:'Digital Clock',
+    newQ:'New Question ▶',
+    subDA:'Digital → Analog',subAD:'Analog → Digital',subMix:'Mix',
+    d1:'Whole hours',d2:'Half hours',d3:'Quarters',d4:'5-min steps',d5:'Exact minutes',
+    setA:'Set the hands to:',setD:'Write the time shown:',
+    chk:'✔ Check',ok:'🎉 Excellent! Correct!',
+    err:'💡 Try again!',errAns:'💡 Correct time was',skip:'Skip →',
+    setDelay:'Auto-advance (s):',setTries:'Attempts:',
+    hod:'hr',min:'min',hLbl:'Hours',mLbl:'Minutes',tabLbl:'min →',
+    am:'AM',pm:'PM',
+    tl:(h,m)=>{const x=h%12||12,ap=h<12?'AM':'PM',n=(x%12)+1;if(!m)return`${x}:00 ${ap}`;if(m===30)return`Half past ${x}`;if(m===15)return`Quarter past ${x}`;if(m===45)return`Quarter to ${n}`;return`${x}:${String(m).padStart(2,'0')} ${ap}`;}
+  }
+};
+const t=k=>TX[S.lang][k]||k;
+
+/* ── SVG CLOCK ── */
+const NS='http://www.w3.org/2000/svg',CX=160,CY=160,R=148;
+const mk=(tag,a)=>{const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);return e;};
+const ang=(hf)=>({ha:(hf%12)/12*360,ma:(hf%1)*360});
+
+function buildFace(svg){
+  svg.innerHTML='';svg.setAttribute('viewBox','0 0 320 320');
+  const df=mk('defs',{}),fi=mk('filter',{id:'ds',x:'-10%',y:'-10%',width:'120%',height:'120%'});
+  fi.appendChild(mk('feDropShadow',{dx:'0',dy:'3',stdDeviation:'7','flood-color':'rgba(74,100,180,.16)'}));
+  df.appendChild(fi);svg.appendChild(df);
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:R,fill:'#fff',stroke:'#dde4f0','stroke-width':'3',filter:'url(#ds)'}));
+  for(let i=0;i<60;i++){
+    const a=(i*6-90)*Math.PI/180,ih=i%5===0,o=R-4,n=ih?o-16:o-8;
+    svg.appendChild(mk('line',{x1:CX+Math.cos(a)*n,y1:CY+Math.sin(a)*n,x2:CX+Math.cos(a)*o,y2:CY+Math.sin(a)*o,stroke:ih?'#90a0c0':'#c8d0e0','stroke-width':ih?'2.5':'1','stroke-linecap':'round'}));
+  }
+  if(S.sMin){
+    for(let i=0;i<12;i++){
+      const a=(i*30-90)*Math.PI/180,nr=R-28;
+      const e=mk('text',{x:CX+Math.cos(a)*nr,y:CY+Math.sin(a)*nr,'text-anchor':'middle','dominant-baseline':'central','font-family':'Nunito,sans-serif','font-size':'11','font-weight':'700',fill:'#4a90d9',opacity:'0.75'});
+      e.textContent=String(i*5).padStart(2,'0');svg.appendChild(e);
+    }
+  }
+  for(let i=1;i<=12;i++){
+    const a=(i*30-90)*Math.PI/180,nr=R-52;
+    if(S.s24){
+      const h24=i+12===24?24:i+12,nr2=nr-22;
+      const e=mk('text',{x:CX+Math.cos(a)*nr2,y:CY+Math.sin(a)*nr2,'text-anchor':'middle','dominant-baseline':'central','font-family':'Nunito,sans-serif','font-size':'10.5','font-weight':'600',fill:'#e05c6a',opacity:'0.62'});
+      e.textContent=h24;svg.appendChild(e);
+    }
+    const e=mk('text',{x:CX+Math.cos(a)*nr,y:CY+Math.sin(a)*nr,'text-anchor':'middle','dominant-baseline':'central','font-family':'Baloo 2,cursive','font-size':'22','font-weight':'800',fill:'#2d3a52'});
+    e.textContent=i;svg.appendChild(e);
+  }
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:'7',fill:'#2d3a52'}));
+}
+
+function drawHands(svg,hf,guideHand){
+  svg.querySelectorAll('.ch,.cc,.guide-ring').forEach(e=>e.remove());
+  const{ha,ma}=ang(hf);
+  const pt=(a,l)=>{const r=(a-90)*Math.PI/180;return{x:CX+Math.cos(r)*l,y:CY+Math.sin(r)*l};};
+  const he=pt(ha,80),me=pt(ma,112);
+  if(guideHand==='hour'){
+    const gr=mk('circle',{cx:CX,cy:CY,r:'80',fill:'none',stroke:'#e05c6a','stroke-width':'4',opacity:'0.55','stroke-dasharray':'8 5','stroke-linecap':'round',class:'guide-ring'});
+    gr.style.pointerEvents='none';svg.appendChild(gr);
+    const gd=mk('circle',{cx:he.x,cy:he.y,r:'13',fill:'#e05c6a',opacity:'0.35',class:'guide-ring'});
+    gd.style.pointerEvents='none';svg.appendChild(gd);
+  }
+  if(guideHand==='min'){
+    const gr=mk('circle',{cx:CX,cy:CY,r:'112',fill:'none',stroke:'#4a90d9','stroke-width':'4',opacity:'0.55','stroke-dasharray':'8 5','stroke-linecap':'round',class:'guide-ring'});
+    gr.style.pointerEvents='none';svg.appendChild(gr);
+    const gd=mk('circle',{cx:me.x,cy:me.y,r:'13',fill:'#4a90d9',opacity:'0.35',class:'guide-ring'});
+    gd.style.pointerEvents='none';svg.appendChild(gd);
+  }
+  svg.appendChild(mk('line',{x1:CX,y1:CY,x2:he.x,y2:he.y,stroke:'rgba(255,255,255,.01)','stroke-width':'46','stroke-linecap':'round',class:'ch hit-h',style:'cursor:grab;touch-action:none'}));
+  svg.appendChild(mk('line',{x1:CX,y1:CY,x2:me.x,y2:me.y,stroke:'rgba(255,255,255,.01)','stroke-width':'46','stroke-linecap':'round',class:'ch hit-m',style:'cursor:grab;touch-action:none'}));
+  svg.appendChild(mk('line',{x1:CX,y1:CY,x2:he.x,y2:he.y,stroke:'#e05c6a','stroke-width':'9','stroke-linecap':'round',class:'ch hour-hand',style:'pointer-events:none'}));
+  svg.appendChild(mk('line',{x1:CX,y1:CY,x2:me.x,y2:me.y,stroke:'#4a90d9','stroke-width':'6','stroke-linecap':'round',class:'ch min-hand',style:'pointer-events:none'}));
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:'8',fill:'#2d3a52',class:'cc',style:'pointer-events:none'}));
+  svg.appendChild(mk('circle',{cx:CX,cy:CY,r:'4',fill:'#fff',class:'cc',style:'pointer-events:none'}));
+}
+function renderClock(svg,hf,g){buildFace(svg);drawHands(svg,hf,g||null);}
+function updateHands(svg,hf,g){drawHands(svg,hf,g||null);}
+
+/* ── DRAG ── */
+function a2d(dx,dy){let a=Math.atan2(dy,dx)*180/Math.PI+90;return((a%360)+360)%360;}
+document.addEventListener('selectstart',e=>{if(window._draggingClock)e.preventDefault();});
+
+function setupDrag(svg,cs,onUp){
+  svg.style.touchAction='none';
+  let drag=null,lastMinAngle=null,hfRaw=0;
+  function svgCoords(e){const r=svg.getBoundingClientRect();return{dx:(e.clientX-r.left)*(320/r.width)-CX,dy:(e.clientY-r.top)*(320/r.height)-CY};}
+  function nearHand(dx,dy){const a=a2d(dx,dy),{ha,ma}=ang(cs.hf);const dh=Math.abs(((a-ha+540)%360)-180),dm=Math.abs(((a-ma+540)%360)-180);return dh<=dm?'hour':'min';}
+  function syncFromRaw(){
+    // Derive h and m from total minutes (rounded) to avoid fp floor errors like floor(10.9999)=10
+    const totalMin = Math.round(((hfRaw % 24) + 24) % 24 * 60);
+    cs.h = Math.floor(totalMin / 60) % 24;
+    cs.m = totalMin % 60;
+    cs.hf = cs.h + cs.m / 60;
+  }
+  function applyAngle(dx,dy){
+    const a=a2d(dx,dy);
+    if(drag==='hour'){
+      // Hour drag: absolute angle → hour position, keep current minutes
+      const raw=(a/30+12)%12, amOff=Math.floor(((hfRaw%24)+24)%24/12)*12;
+      hfRaw = Math.floor(raw) + amOff + (cs.m/60);
+      syncFromRaw();
+    } else {
+      // Minute drag: delta accumulation → hfRaw advances continuously
+      // One full minute-hand rotation (360°) = 1 hour
+      if(lastMinAngle===null) lastMinAngle=a;
+      let delta=a-lastMinAngle;
+      if(delta>180) delta-=360;
+      if(delta<-180) delta+=360;
+      lastMinAngle=a;
+      hfRaw+=delta/360;
+      syncFromRaw();
+    }
+    updateHands(svg,cs.hf,drag);
+  }
+  svg.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    const{dx,dy}=svgCoords(e),tgt=e.target;
+    drag=tgt.classList.contains('hit-h')?'hour':tgt.classList.contains('hit-m')?'min':nearHand(dx,dy);
+    lastMinAngle=null;
+    cs.hf=((cs.h+(cs.m/60))%24+24)%24;
+    hfRaw=cs.hf;                                // seed hfRaw so delta starts at zero
+    window._draggingClock=true;
+    svg.setPointerCapture(e.pointerId);updateHands(svg,cs.hf,drag);e.preventDefault();
+  });
+  svg.addEventListener('pointermove',e=>{if(!drag)return;const{dx,dy}=svgCoords(e);applyAngle(dx,dy);});
+  function endDrag(){
+    syncFromRaw();
+    drag=null;lastMinAngle=null;window._draggingClock=false;
+    renderClock(svg,cs.hf,null);onUp&&onUp();
+  }
+  svg.addEventListener('pointerup',endDrag);
+  svg.addEventListener('pointercancel',endDrag);
+}
+
+/* ── LEARN ── */
+const LS={h:10,m:10,hf:10.167};
+function updLearnDigital(){
+  document.getElementById('dh').textContent=String(LS.h).padStart(2,'0');
+  document.getElementById('dm').textContent=String(LS.m).padStart(2,'0');
+  document.getElementById('time-txt').textContent=TX[S.lang].tl(LS.h,LS.m);
+}
+function updLearn(){const svg=document.getElementById('asvg');renderClock(svg,LS.hf);updLearnDigital();}
+function adjL(part,d){if(part==='h')LS.h=(LS.h+d+24)%24;else LS.m=(LS.m+d+60)%60;LS.hf=LS.h+(LS.m/60);updLearn();}
+
+/* ── PRACTICE ── */
+let pSVG=null;
+const PC={h:12,m:0,hf:12};
+
+function genTarget(){
+  const step=parseInt(document.getElementById('dif').value);
+  S.pTarget.m=step===60?0:Math.floor(Math.random()*(60/step))*step;
+  S.pTarget.h=S.prac24h?Math.floor(Math.random()*24):Math.floor(Math.random()*12)+1;
+  PC.h=12;PC.m=0;PC.hf=12;
+}
+
+let autoTimer=null;
+
+function newQ(){
+  if(autoTimer){clearInterval(autoTimer);autoTimer=null;}
+  S.answered=false;S.tries=0;genTarget();
+  const sub=document.getElementById('sub').value;
+  S.pMode=sub==='mix'?(Math.random()<.5?'d2a':'a2d'):sub;
+  const fb=document.getElementById('pfb');fb.className='fb';fb.textContent='';
+  const row=document.getElementById('prow');
+  const{h,m}=S.pTarget;
+
+  if(S.pMode==='d2a'){
+    const hStr=String(h).padStart(2,'0'),mStr=String(m).padStart(2,'0');
+    const ampmLabel=h<12?t('am'):t('pm');
+    row.innerHTML=`
+      <div class="d2a-sidebar">
+        <div class="task-label">${t('setA')}</div>
+        <div class="task-time">${hStr}:${mStr}</div>
+        ${S.prac24h?`<div class="task-ampm">${ampmLabel}</div>`:''}
+        <div class="task-desc">${TX[S.lang].tl(h,m)}</div>
+        <button class="btn-chk" id="chk-b" onclick="chkAns()">${t('chk')}</button>
+        <button class="btn-skip" id="skip-b" style="display:none" onclick="newQ()">${t('skip')}</button>
+      </div>
+      <div class="d2a-clock clk-panel">
+        <div class="clk-lbl">${t('aClk')}</div>
+        <div class="clk-frame"><svg id="psvg" viewBox="0 0 320 320"></svg></div>
+        <div class="hand-ctrl">
+          <button class="hc hh" data-rep="adjP" data-part="h" data-d="-1">◀ ${t('hod')}</button>
+          <button class="hc hh" data-rep="adjP" data-part="h" data-d="1">${t('hod')} ▶</button>
+          <button class="hc hm" data-rep="adjP" data-part="m" data-d="-5">◀◀</button>
+          <button class="hc hm" data-rep="adjP" data-part="m" data-d="-1">◀ ${t('min')}</button>
+          <button class="hc hm" data-rep="adjP" data-part="m" data-d="1">${t('min')} ▶</button>
+          <button class="hc hm" data-rep="adjP" data-part="m" data-d="5">▶▶</button>
+        </div>
+      </div>`;
+    pSVG=document.getElementById('psvg');
+    renderClock(pSVG,PC.hf);
+    setupDrag(pSVG,PC,()=>{});
+  } else {
+    const isAM = h < 12;
+    const ampmLabel = isAM ? t('am') : t('pm');
+    const ampmColor = isAM ? '#4a90d9' : '#e05c6a';
+    row.innerHTML=`
+      <div class="a2d-clock clk-panel">
+        <div class="clk-lbl">${t('aClk')}</div>
+        <div class="clk-frame"><svg id="psvg" viewBox="0 0 320 320"></svg></div>
+        <div style="flex-shrink:0;display:flex;justify-content:center;padding:2px 0">
+          <div style="font-family:var(--fh);font-weight:800;font-size:clamp(.85rem,2vw,1.1rem);
+            background:${ampmColor};color:#fff;border-radius:50px;
+            padding:5px 20px;letter-spacing:.04em;box-shadow:0 3px 10px ${ampmColor}55">
+            ${isAM ? '🌤' : '🌙'} ${ampmLabel}
+          </div>
+        </div>
+      </div>
+      <div class="a2d-input">
+        <div class="prac-prompt">${t('setD')}</div>
+        <div class="diw" id="diw"></div>
+        <button class="btn-chk" id="chk-b" onclick="chkAns()">${t('chk')}</button>
+        <button class="btn-skip" id="skip-b" style="display:none" onclick="newQ()">${t('skip')}</button>
+      </div>`;
+    pSVG=document.getElementById('psvg');
+    renderClock(pSVG,h+m/60);
+    buildDIW(document.getElementById('diw'));
+  }
+}
+
+function adjP(part,d){
+  if(part==='h')PC.h=(PC.h+d+24)%24;else PC.m=(PC.m+d+60)%60;
+  PC.hf=PC.h+(PC.m/60);if(pSVG)renderClock(pSVG,PC.hf);
+}
+
+/* ── DRUM PICKER ── */
+const DRUM_ITEM_H = 48;
+let _drumOverlay = null;
+
+function openDrum(field, anchorEl) {
+  // Toggle: if same field already open, close it
+  if (_drumOverlay) {
+    const wasField = _drumOverlay._field;
+    closeDrum();
+    if (wasField === field) return;
+  }
+  DW.focus = field;
+  const isHour = field === 'hour';
+  const max = isHour ? 23 : 59;
+  const current = isHour ? DW.h : DW.m;
+
+  // Overlay (closes drum on outside click)
+  const overlay = document.createElement('div');
+  overlay.className = 'drum-overlay';
+  overlay._field = field;
+  overlay.addEventListener('pointerdown', e => {
+    if (!e.target.closest('.drum-picker')) closeDrum();
+  });
+
+  // Picker
+  const picker = document.createElement('div');
+  picker.className = 'drum-picker';
+
+  const inner = document.createElement('div');
+  inner.className = 'drum-inner';
+
+  const centerLine = document.createElement('div');
+  centerLine.className = 'drum-center-line';
+  inner.appendChild(centerLine);
+
+  const scroll = document.createElement('div');
+  scroll.className = 'drum-scroll';
+
+  const PAD = 2; // phantom items each side
+
+  // Padding top
+  for (let i = 0; i < PAD; i++) {
+    const p = document.createElement('div');
+    p.className = 'drum-item pad';
+    scroll.appendChild(p);
+  }
+  // Real items
+  for (let v = 0; v <= max; v++) {
+    const item = document.createElement('div');
+    item.className = 'drum-item';
+    item.dataset.v = v;
+    item.textContent = String(v).padStart(2, '0');
+    scroll.appendChild(item);
+  }
+  // Padding bottom
+  for (let i = 0; i < PAD; i++) {
+    const p = document.createElement('div');
+    p.className = 'drum-item pad';
+    scroll.appendChild(p);
+  }
+
+  inner.appendChild(scroll);
+  picker.appendChild(inner);
+
+  // Position relative to anchor
+  const rect = anchorEl.getBoundingClientRect();
+  const ph = DRUM_ITEM_H * 5;
+  const pw = 110;
+  let top = rect.bottom + 8;
+  if (top + ph > window.innerHeight - 8) top = rect.top - ph - 8;
+  let left = rect.left + rect.width / 2 - pw / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+  picker.style.top  = top + 'px';
+  picker.style.left = left + 'px';
+
+  overlay.appendChild(picker);
+  document.body.appendChild(overlay);
+  _drumOverlay = overlay;
+
+  // Highlight helper
+  function highlight() {
+    const idx = Math.round(scroll.scrollTop / DRUM_ITEM_H);
+    scroll.querySelectorAll('.drum-item:not(.pad)').forEach((el, i) => {
+      el.classList.toggle('sel',  i === idx);
+      el.classList.toggle('near', i === idx - 1 || i === idx + 1);
+    });
+  }
+
+  // Debounced commit
+  let settleTimer = null;
+  scroll.addEventListener('scroll', () => {
+    highlight();
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      const idx = Math.round(scroll.scrollTop / DRUM_ITEM_H);
+      const val = Math.max(0, Math.min(idx, max));
+      if (isHour) DW.h = val; else DW.m = val;
+      NB.v = '';
+      // Update sdsp without closing drum
+      const hs = String(DW.h).padStart(2,'0'), ms = String(DW.m).padStart(2,'0');
+      const hd = document.querySelector('.sdsp.hd');
+      const md = document.querySelector('.sdsp.md');
+      if (hd) hd.textContent = hs;
+      if (md) md.textContent = ms;
+    }, 120);
+  }, { passive: true });
+
+  // Mouse wheel
+  scroll.addEventListener('wheel', e => {
+    e.preventDefault();
+    scroll.scrollBy({ top: e.deltaY > 0 ? DRUM_ITEM_H : -DRUM_ITEM_H, behavior: 'smooth' });
+  }, { passive: false });
+
+  // Item click
+  scroll.addEventListener('click', e => {
+    const item = e.target.closest('.drum-item:not(.pad)');
+    if (!item) return;
+    const val = parseInt(item.dataset.v);
+    scroll.scrollTo({ top: val * DRUM_ITEM_H, behavior: 'smooth' });
+  });
+
+  // Scroll to current & highlight
+  requestAnimationFrame(() => {
+    scroll.scrollTop = current * DRUM_ITEM_H;
+    highlight();
+  });
+}
+
+function closeDrum() {
+  if (_drumOverlay) { _drumOverlay.remove(); _drumOverlay = null; }
+}
+
+/* ── DIGITAL INPUT WIDGET ── */
+const DW={h:0,m:0,focus:'hour',_r:null};
+const NB={v:''};
+
+function buildDIW(c){
+  DW.h=0;DW.m=0;DW.focus='hour';NB.v='';
+  closeDrum();
+  function r(){
+    const hs=String(DW.h).padStart(2,'0'),ms=String(DW.m).padStart(2,'0');
+    const ha=DW.focus==='hour'?' act':'',ma=DW.focus==='min'?' act':'';
+    const isAM=DW.h<12;
+    const ampmHtml=S.prac24h?`<div class="ampm-row">
+      <button class="ampm-btn${isAM?' sel':''}" onclick="dwAmPm(true)">${t('am')}</button>
+      <button class="ampm-btn${!isAM?' sel':''}" onclick="dwAmPm(false)">${t('pm')}</button>
+    </div>`:'';
+
+    const spinnerHtml=`
+      <div class="inp-hint">
+        <span style="color:var(--H)">■ ${t('hLbl')}</span>
+        <span style="color:var(--M)">■ ${t('mLbl')}</span>
+      </div>
+      <div class="sp-row">
+        <div class="sgrp">
+          <button class="sbtn up hs" data-rep="dws" data-part="h" data-d="1">▲</button>
+          <div class="sdsp hd${ha}" onclick="DW.focus='hour';openDrum('hour',this)">${hs}</div>
+          <button class="sbtn dn hs" data-rep="dws" data-part="h" data-d="-1">▼</button>
+        </div>
+        <div class="scol">:</div>
+        <div class="sgrp">
+          <button class="sbtn up" data-rep="dws" data-part="m" data-d="1">▲</button>
+          <div class="sdsp md${ma}" onclick="DW.focus='min';openDrum('min',this)">${ms}</div>
+          <button class="sbtn dn" data-rep="dws" data-part="m" data-d="-1">▼</button>
+        </div>
+      </div>
+      ${ampmHtml}`;
+
+    const numpadHtml=`
+      <div class="npg">
+        ${[1,2,3,4,5,6,7,8,9].map(n=>`<div class="nk" onclick="dwk(${n})">${n}</div>`).join('')}
+        <div class="nk del" onclick="dwk('del')">⌫</div>
+        <div class="nk" onclick="dwk(0)">0</div>
+        <div class="nk ok" onclick="dwk('tab')">${t('tabLbl')}</div>
+      </div>`;
+
+    if (S.showNumpad) {
+      c.className = 'diw with-numpad';
+      c.innerHTML = `
+        <div class="diw-left">${spinnerHtml}</div>
+        <div class="diw-right">${numpadHtml}</div>`;
+    } else {
+      c.className = 'diw';
+      c.innerHTML = spinnerHtml;
+    }
+  }
+  r();DW._r=r;
+}
+
+function dwAmPm(isAM){const h12=DW.h%12;DW.h=isAM?h12:(h12+12);DW._r&&DW._r();}
+function dws(p,d){if(p==='h'){DW.h=(DW.h+d+24)%24;DW.focus='hour';}else{DW.m=(DW.m+d+60)%60;DW.focus='min';}DW._r&&DW._r();}
+function dwk(k){
+  if(!document.getElementById('diw'))return;
+  if(k==='del'){NB.v=NB.v.slice(0,-1);DW[DW.focus==='hour'?'h':'m']=parseInt(NB.v||'0');DW._r&&DW._r();return;}
+  if(k==='tab'){NB.v='';DW.focus=DW.focus==='hour'?'min':'hour';DW._r&&DW._r();return;}
+  NB.v+=String(k);
+  if(DW.focus==='hour'){DW.h=Math.min(parseInt(NB.v),23);if(NB.v.length>=2||(S.prac24h?parseInt(NB.v[0])>2:parseInt(NB.v[0])>1)){NB.v='';DW.focus='min';}}
+  else{DW.m=Math.min(parseInt(NB.v),59);if(NB.v.length>=2||parseInt(NB.v[0])>5)NB.v='';}
+  DW._r&&DW._r();
+}
+
+/* ── CHECK ── */
+function chkAns(){
+  if(S.answered)return;
+  const{h,m}=S.pTarget;
+  let ok=false;
+  if(S.pMode==='d2a'){ok=(PC.h%12===h%12&&PC.m===m);}
+  else{if(S.prac24h)ok=(DW.h===h&&DW.m===m);else ok=((DW.h%12===h%12||DW.h===h)&&DW.m===m);}
+  const fb=document.getElementById('pfb');
+  const chkB=document.getElementById('chk-b'),skipB=document.getElementById('skip-b');
+  if(ok){
+    S.answered=true;S.tries=0;S.stars++;saveProg();updStars();doConfetti();
+    if(chkB)chkB.style.display='none';
+    if(skipB)skipB.style.display='none';
+    let remaining=S.autoDelay;
+    fb.className='fb ok';
+    fb.innerHTML=`${t('ok')} <span class="countdown" id="cd">${remaining}</span>`;
+    autoTimer=setInterval(()=>{remaining--;const cd=document.getElementById('cd');if(cd)cd.textContent=remaining;if(remaining<=0){clearInterval(autoTimer);autoTimer=null;newQ();}},1000);
+  } else {
+    S.tries++;
+    if(skipB)skipB.style.display='';
+    if(S.tries>=S.maxTries){
+      fb.className='fb err';
+      fb.textContent=`${t('errAns')} ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      if(pSVG)setTimeout(()=>{PC.hf=h+m/60;PC.h=Math.floor(PC.hf);PC.m=m;renderClock(pSVG,PC.hf);},1500);
+    } else {
+      fb.className='fb err';fb.textContent=`${t('err')} (${S.maxTries-S.tries}×)`;
+    }
+    if(pSVG){
+      const hh=pSVG.querySelector('.hour-hand'),mh=pSVG.querySelector('.min-hand');
+      if(hh){hh.classList.add('bh');setTimeout(()=>hh.classList.remove('bh'),3200);}
+      if(mh){mh.classList.add('bm');setTimeout(()=>mh.classList.remove('bm'),3200);}
+    }
+  }
+}
+
+/* ── CONFETTI ── */
+function doConfetti(){
+  const cv=document.getElementById('cc'),ctx=cv.getContext('2d');
+  cv.width=innerWidth;cv.height=innerHeight;
+  const cols=['#e05c6a','#4a90d9','#ffb347','#5cb85c','#9b59b6','#1abc9c'];
+  const ps=Array.from({length:120},()=>({x:Math.random()*cv.width,y:Math.random()*-cv.height*.6,vx:(Math.random()-.5)*5,vy:Math.random()*5+2,c:cols[~~(Math.random()*6)],s:Math.random()*11+5,sp:Math.random()*360,ss:(Math.random()-.5)*9,rect:Math.random()<.5}));
+  let fr;(function draw(){ctx.clearRect(0,0,cv.width,cv.height);let al=false;for(const p of ps){p.x+=p.vx;p.y+=p.vy;p.sp+=p.ss;p.vy+=.06;if(p.y<cv.height+30)al=true;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.sp*Math.PI/180);ctx.fillStyle=p.c;if(p.rect)ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);else{ctx.beginPath();ctx.arc(0,0,p.s/2,0,Math.PI*2);ctx.fill();}ctx.restore();}if(al)fr=requestAnimationFrame(draw);else ctx.clearRect(0,0,cv.width,cv.height);})();
+}
+
+/* ── UI ── */
+function updStars(){const e=document.getElementById('sc');e.textContent=S.stars;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop');}
+function switchTab(tab){
+  if(autoTimer){clearInterval(autoTimer);autoTimer=null;}
+  document.getElementById('ml').classList.toggle('on',tab==='learn');
+  document.getElementById('mp').classList.toggle('on',tab==='prac');
+  document.getElementById('tab-learn').classList.toggle('on',tab==='learn');
+  document.getElementById('tab-prac').classList.toggle('on',tab==='prac');
+  if(tab==='prac'){document.getElementById('prow').innerHTML='';const fb=document.getElementById('pfb');fb.className='fb';fb.textContent='';}
+}
+function applyLang(){
+  const L=S.lang;
+  document.documentElement.lang=L;
+  document.getElementById('lang-btn').textContent=L==='cs'?'🌐 EN':'🌐 CZ';
+  document.querySelectorAll('[data-i18n]').forEach(e=>{const k=e.getAttribute('data-i18n');if(TX[L][k])e.textContent=TX[L][k];});
+  document.querySelectorAll('[data-i18n-opt]').forEach(e=>{const k=e.getAttribute('data-i18n-opt');if(TX[L][k])e.textContent=TX[L][k];});
+  updLearn();
+}
+document.getElementById('lang-btn').addEventListener('click',()=>{S.lang=S.lang==='cs'?'en':'cs';applyLang();saveProg();});
+document.getElementById('set-btn').addEventListener('click',()=>document.getElementById('set-wrap').classList.toggle('open'));
+document.getElementById('t24').addEventListener('change',e=>{S.s24=e.target.checked;saveSett();updLearn();if(pSVG)renderClock(pSVG,S.pTarget.h+S.pTarget.m/60);});
+document.getElementById('tmin').addEventListener('change',e=>{S.sMin=e.target.checked;saveSett();updLearn();if(pSVG)renderClock(pSVG,S.pTarget.h+S.pTarget.m/60);});
+document.getElementById('t24h-prac').addEventListener('change',e=>{S.prac24h=e.target.checked;saveSett();});
+document.getElementById('tNumpad').addEventListener('change',e=>{S.showNumpad=e.target.checked;saveSett();const diw=document.getElementById('diw');if(diw&&DW._r){closeDrum();DW._r();}});
+function adjSetting(key,d){
+  if(key==='delay'){S.autoDelay=Math.max(1,Math.min(10,S.autoDelay+d));document.getElementById('set-delay-val').textContent=S.autoDelay;}
+  else{S.maxTries=Math.max(1,Math.min(9,S.maxTries+d));document.getElementById('set-tries-val').textContent=S.maxTries;}
+  saveSett();
+}
+
+/* ── STORAGE ── */
+function saveProg(){localStorage.setItem('ca_stars',S.stars);localStorage.setItem('ca_lang',S.lang);}
+function saveSett(){
+  localStorage.setItem('ca_s24',S.s24);localStorage.setItem('ca_sMin',S.sMin);
+  localStorage.setItem('ca_p24h',S.prac24h);
+  localStorage.setItem('ca_sub',document.getElementById('sub').value);
+  localStorage.setItem('ca_dif',document.getElementById('dif').value);
+  localStorage.setItem('ca_delay',S.autoDelay);localStorage.setItem('ca_tries',S.maxTries);
+  localStorage.setItem('ca_numpad',S.showNumpad);
+}
+function loadStore(){
+  const st=localStorage.getItem('ca_stars');if(st)S.stars=parseInt(st);
+  const lg=localStorage.getItem('ca_lang');if(lg)S.lang=lg;
+  const s24=localStorage.getItem('ca_s24');if(s24!==null)S.s24=s24==='true';
+  const sm=localStorage.getItem('ca_sMin');if(sm!==null)S.sMin=sm==='true';
+  const p24=localStorage.getItem('ca_p24h');if(p24!==null)S.prac24h=p24==='true';
+  const sub=localStorage.getItem('ca_sub');if(sub)S.pSub=sub;
+  const dif=localStorage.getItem('ca_dif');const vd=['60','30','15','5','1'];
+  S.pDif=(dif&&vd.includes(dif))?dif:'60';
+  const dl=localStorage.getItem('ca_delay');if(dl)S.autoDelay=Math.max(1,Math.min(10,parseInt(dl)));
+  const tr=localStorage.getItem('ca_tries');if(tr)S.maxTries=Math.max(1,Math.min(9,parseInt(tr)));
+  const np=localStorage.getItem('ca_numpad');if(np!==null)S.showNumpad=np==='true';
+  document.getElementById('t24').checked=S.s24;
+  document.getElementById('tmin').checked=S.sMin;
+  document.getElementById('t24h-prac').checked=S.prac24h;
+  document.getElementById('sub').value=S.pSub;
+  document.getElementById('dif').value=S.pDif;
+  document.getElementById('set-delay-val').textContent=S.autoDelay;
+  document.getElementById('set-tries-val').textContent=S.maxTries;
+  document.getElementById('tNumpad').checked=S.showNumpad;
+  document.getElementById('sc').textContent=S.stars;
+}
+
+/* ── HOLD-TO-REPEAT ── */
+(function(){
+  let repTimer=null,repInterval=null;
+  function fire(btn){const fn=btn.dataset.rep,part=btn.dataset.part,d=parseInt(btn.dataset.d);if(fn==='adjL')adjL(part,d);else if(fn==='adjP')adjP(part,d);else if(fn==='dws')dws(part,d);}
+  function stop(){clearTimeout(repTimer);clearInterval(repInterval);repTimer=repInterval=null;}
+  document.addEventListener('pointerdown',e=>{const btn=e.target.closest('[data-rep]');if(!btn)return;e.preventDefault();fire(btn);stop();repTimer=setTimeout(()=>{repInterval=setInterval(()=>fire(btn),80);},380);},{passive:false});
+  document.addEventListener('pointerup',stop);
+  document.addEventListener('pointercancel',stop);
+})();
+
+/* ── INIT ── */
+function init(){
+  loadStore();applyLang();
+  const svg=document.getElementById('asvg');
+  LS.hf=LS.h+(LS.m/60);
+  renderClock(svg,LS.hf);
+  setupDrag(svg,LS,updLearnDigital);
+  updLearnDigital();
+}
+init();
+</script>
+</body>
+</html>

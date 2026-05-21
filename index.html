@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Výukové aplikace">
+<meta name="theme-color" content="#2d3a52">
+<title>Výukové aplikace</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ── LAYOUT ── */
+html, body {
+  min-height: 100%;
+  font-family: var(--fb);
+  background: var(--bg);
+  color: var(--text);
+  background-image:
+    radial-gradient(circle at 8% 10%,  #ffe8ec 0%, transparent 38%),
+    radial-gradient(circle at 92% 90%, #deeeff 0%, transparent 38%);
+}
+body { display: flex; flex-direction: column; }
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 24px 16px;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+}
+.idx-title {
+  font-family: var(--fh);
+  font-size: clamp(24px, 5vw, 42px);
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.15;
+}
+.idx-subtitle {
+  font-size: var(--text-body);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ── MAIN GRID ── */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 20px 40px;
+  gap: 0;
+}
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 700px;
+}
+
+/* ── MODULE CARD ── */
+.module-card {
+  background: var(--panel);
+  border-radius: 24px;
+  box-shadow: var(--shadow-card);
+  border: 2px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform .2s, box-shadow .2s;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.module-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(74,100,180,0.2);
+}
+.module-card:active { transform: translateY(-1px); }
+
+.card-top {
+  padding: 28px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  position: relative;
+}
+.card-accent {
+  position: absolute;
+  inset: 0;
+  opacity: .08;
+  border-radius: 22px 22px 0 0;
+}
+.card-icon {
+  font-size: clamp(52px, 10vw, 72px);
+  line-height: 1;
+  position: relative;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,.12));
+}
+.card-name {
+  font-family: var(--fh);
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: 800;
+  color: var(--text);
+  position: relative;
+}
+.card-desc {
+  font-size: var(--text-body);
+  color: var(--text-muted);
+  font-weight: 600;
+  line-height: 1.4;
+  position: relative;
+}
+.card-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  position: relative;
+}
+.topic-pill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--panel-2);
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+}
+
+.card-bottom {
+  padding: 0 24px 24px;
+  display: flex;
+  justify-content: center;
+}
+.btn-open {
+  font-family: var(--fh);
+  font-size: var(--text-ui);
+  font-weight: 800;
+  padding: 12px 36px;
+  border: none;
+  border-radius: 50px;
+  color: #fff;
+  cursor: pointer;
+  transition: filter .15s, transform .15s;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  width: 100%;
+  pointer-events: none; /* handled by parent <a> */
+}
+.module-card:hover .btn-open { filter: brightness(1.1); }
+
+/* ── CARD VARIANTS ── */
+.card-math .card-accent  { background: var(--clr-math); }
+.card-math .btn-open     { background: linear-gradient(135deg, #5cb85c, #27ae60); }
+.card-math .topic-pill   { border-color: #b8e6b8; color: #2e7d32; background: #f0faf0; }
+
+.card-clock .card-accent { background: var(--clr-clock); }
+.card-clock .btn-open    { background: linear-gradient(135deg, #4a90d9, #1a6cc0); }
+.card-clock .topic-pill  { border-color: #b3d4f7; color: #1a4f8a; background: #eef5ff; }
+
+/* ── COMING SOON CARD ── */
+.card-soon {
+  opacity: .55;
+  pointer-events: none;
+  cursor: default;
+}
+.card-soon:hover { transform: none; box-shadow: var(--shadow-card); }
+.card-soon .card-accent { background: #aaa; }
+.card-soon .btn-open    { background: #aaa; }
+.card-badge {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: var(--hint);
+  color: #7a4000;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center;
+  padding: 12px 20px 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="idx-title">🎓 Výukové aplikace</div>
+  <div class="idx-subtitle">Vyber si, co chceš procvičovat</div>
+</header>
+
+<main>
+  <div class="modules-grid">
+
+    <!-- MATEMATIKA -->
+    <a href="math.html" class="module-card card-math">
+      <div class="card-top">
+        <div class="card-accent"></div>
+        <div class="card-icon">🦊</div>
+        <div class="card-name">Počítáme s Matýskem</div>
+        <div class="card-desc">Výuka a procvičování matematiky pro 1.–5. třídu</div>
+        <div class="card-topics">
+          <span class="topic-pill">➕ Sčítání</span>
+          <span class="topic-pill">➖ Odčítání</span>
+          <span class="topic-pill">✖️ Násobení</span>
+          <span class="topic-pill">➗ Dělení</span>
+          <span class="topic-pill">🍰 Zlomky</span>
+          <span class="topic-pill">🔢 Desetinná čísla</span>
+        </div>
+      </div>
+      <div class="card-bottom">
+        <div class="btn-open">📚 Otevřít</div>
+      </div>
+    </a>
+
+    <!-- HODINY -->
+    <a href="clock.html" class="module-card card-clock">
+      <div class="card-top">
+        <div class="card-accent"></div>
+        <div class="card-icon">🕐</div>
+        <div class="card-name">Učíme se číst čas</div>
+        <div class="card-desc">Výuka analogových a digitálních hodin</div>
+        <div class="card-topics">
+          <span class="topic-pill">🕐 Analogové hodiny</span>
+          <span class="topic-pill">🔢 Digitální čas</span>
+          <span class="topic-pill">🌍 12h / 24h formát</span>
+          <span class="topic-pill">🎯 Procvičování</span>
+        </div>
+      </div>
+      <div class="card-bottom">
+        <div class="btn-open">📚 Otevřít</div>
+      </div>
+    </a>
+
+    <!-- BRZY (placeholder pro budoucí moduly) -->
+    <div class="module-card card-soon" aria-hidden="true">
+      <div class="card-top">
+        <div class="card-accent"></div>
+        <div class="card-badge">Brzy</div>
+        <div class="card-icon">📐</div>
+        <div class="card-name">Geometrie</div>
+        <div class="card-desc">Tvary, obvody, obsahy a prostorové představy</div>
+        <div class="card-topics">
+          <span class="topic-pill">🔺 Trojúhelníky</span>
+          <span class="topic-pill">⬛ Čtyřúhelníky</span>
+          <span class="topic-pill">⭕ Kruhy</span>
+        </div>
+      </div>
+      <div class="card-bottom">
+        <div class="btn-open">📚 Brzy</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  Výukové aplikace · 1.–5. třída ZŠ
+</footer>
+
+</body>
+</html>
