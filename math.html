@@ -12,20 +12,35 @@
 <style>
 /* ══════════════════════════════════════════════════════
    math.html — specifické styly
-   Sdílené proměnné, reset, body, btn-back-index
-   jsou definovány v shared.css.
    ══════════════════════════════════════════════════════ */
 
+/* Základní fallback pro body (kdyby chybělo v shared.css) a zafixování layoutu */
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden; /* Důležité pro prevenci scrollování celé stránky na mobilu */
+  background-color: var(--bg, #fef9f0);
+  color: var(--text, #2d3a52);
+  font-family: var(--font-body, 'Nunito', sans-serif);
+}
+
+/* Opravený canvas pro konfety, aby nerozbíjel layout */
+#confetti-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
 /* ── SCREENS ── */
-/* Screen je flex-child body (body má height:100dvh v shared.css).
-   NESMÍ mít vlastní height:100dvh — to by ji udělalo vyšší než viewport. */
 .screen { display:none; flex-direction:column; flex:1 1 0; min-height:0; overflow:hidden; }
 .screen.active { display:flex; }
 .screen > .app-header { flex-shrink:0; }
 .screen > .prog-bar   { flex-shrink:0; }
 .screen > .q-wrap     { flex:1 1 0; min-height:0; }
 
-/* ── HEADER (grade-color accent) ── */
+/* ── HEADER ── */
 .app-header {
   display:flex; align-items:center; justify-content:space-between;
   padding:10px 16px; background:var(--panel);
@@ -46,7 +61,7 @@
 .btn-icon:hover { background:var(--panel-2); }
 .score-badge {
   font-family:var(--font-display); font-size:var(--text-body);
-  font-weight:700; color:var(--color-hint); min-width:52px; text-align:right;
+  font-weight:700; color:var(--hint); min-width:52px; text-align:right;
 }
 
 /* ── HOME ── */
@@ -72,7 +87,7 @@
 .home-badge-main { font-size:var(--text-body); font-weight:700; }
 .home-badge-sub  { font-size:var(--text-label); color:var(--text-muted); margin-top:3px; letter-spacing:2px; }
 .home-score { font-size:var(--text-body); color:var(--text-muted); font-weight:700; }
-.home-score .val { color:var(--color-hint); }
+.home-score .val { color:var(--hint); }
 .home-actions { display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%; max-width:400px; }
 .btn-main {
   font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
@@ -91,7 +106,6 @@
 
 /* ── QUESTION LAYOUT ── */
 .q-wrap { flex:1 1 0; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
-/* visual-area scvrkne se ale ne pod minimum; q-card a input-area se nikdy neoříznou */
 .q-wrap .visual-area { flex:1 1 0; min-height:40px; max-height:38vh; }
 .q-wrap .q-card      { flex-shrink:0; }
 .q-wrap .input-area  { flex-shrink:0; }
@@ -108,12 +122,8 @@
 }
 .q-meta { font-size:var(--text-label); color:var(--text-muted); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
 .q-meta .topic-lbl {
-  font-family:var(--font-body);
-  font-size:var(--text-label);
-  font-weight:700;
-  color:var(--text-muted);
-  text-transform:uppercase;
-  letter-spacing:.04em;
+  font-family:var(--font-body); font-size:var(--text-label); font-weight:700;
+  color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;
 }
 .mascot { font-size:22px; transition:filter .3s; display:inline-block; }
 .mascot.happy { filter:drop-shadow(0 0 8px #5cb85c); }
@@ -121,7 +131,7 @@
 .mascot.hint  { filter:drop-shadow(0 0 8px #ffb347); }
 .q-expr {
   font-family:var(--font-display);
-  font-size:clamp(32px, 7vw, 62px);   /* větší než text-display z shared.css */
+  font-size:clamp(32px, 7vw, 62px);
   font-weight:700; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
   line-height:1.15;
 }
@@ -140,14 +150,12 @@
 .fb-banner.hint    { background:#fff3cd; color:#856404; display:block; }
 
 /* ── INPUT AREA ── */
-/* Celá input-area musí být viditelná — numpad tlačítka menší aby se vše vešlo */
 .input-area {
   flex-shrink:0; background:var(--panel);
   padding:8px 16px 12px;
   display:flex; flex-direction:column; align-items:center; gap:8px;
   overflow:visible;
 }
-/* Přímé děti input-area dostanou plnou šířku (max 420px) */
 .input-area > * { width:100%; max-width:420px; }
 .numpad {
   display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
@@ -165,7 +173,7 @@
 .btn-check {
   font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
   padding:14px; border:none; border-radius:12px;
-  background:var(--color-correct); color:#fff; cursor:pointer;
+  background:var(--correct); color:#fff; cursor:pointer;
   transition:transform .15s,opacity .15s;
 }
 .btn-check:hover { transform:scale(1.02); }
@@ -178,13 +186,13 @@
   border:2px solid var(--border); background:var(--panel); color:var(--text-muted);
   transition:all .15s; touch-action:manipulation;
 }
-.btn-hint:hover { border-color:var(--color-hint); color:var(--color-hint); }
-.btn-skip:hover { border-color:var(--color-neutral); color:var(--color-neutral); }
+.btn-hint:hover { border-color:var(--hint); color:var(--hint); }
+.btn-skip:hover { border-color:var(--text-muted); color:var(--text-muted); }
 
 /* ── MULTIPLE CHOICE ── */
 .mc-grid {
   display:grid; grid-template-columns:1fr 1fr; gap:10px;
-  width:100%; max-width:420px;  /* full width of input-area */
+  width:100%; max-width:420px;
 }
 .mc-btn {
   font-family:var(--font-display); font-size:clamp(22px,4vw,36px); font-weight:700;
@@ -195,8 +203,8 @@
 }
 .mc-btn:hover:not(:disabled) { border-color:var(--grade-color); transform:scale(1.04); }
 .mc-btn:active:not(:disabled) { transform:scale(0.95); }
-.mc-btn.ok  { border-color:var(--color-correct); background:#d4edda; }
-.mc-btn.bad { border-color:var(--color-wrong);   background:#f8d7da; }
+.mc-btn.ok  { border-color:var(--correct); background:#d4edda; }
+.mc-btn.bad { border-color:var(--wrong);   background:#f8d7da; }
 .mc-btn:disabled { cursor:not-allowed; }
 
 /* ── RESULTS ── */
@@ -218,8 +226,8 @@
 }
 .hi-item:last-child { border:none; }
 .hi-item .ico { font-size:18px; flex-shrink:0; margin-top:1px; }
-.hi-item .bad-ans { color:var(--color-wrong); text-decoration:line-through; }
-.hi-item .ok-ans  { color:var(--color-correct); font-weight:700; }
+.hi-item .bad-ans { color:var(--wrong); text-decoration:line-through; }
+.hi-item .ok-ans  { color:var(--correct); font-weight:700; }
 .res-actions { display:flex; gap:12px; width:100%; max-width:380px; }
 .btn-2nd {
   flex:1; font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
@@ -277,7 +285,7 @@
 .topic-lbl { flex:1; font-size:var(--text-body); font-weight:700; }
 .topic-sum { font-size:var(--text-label); color:var(--text-muted); margin-right:8px; max-width:120px; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-/* Toggle — math verze (větší než clock) */
+/* Toggle */
 .tgl-wrap { position:relative; width:52px; height:28px; flex-shrink:0; }
 .tgl-inp  { opacity:0; width:0; height:0; position:absolute; }
 .tgl-lbl  {
@@ -289,7 +297,7 @@
   width:22px; height:22px; border-radius:50%; background:#fff;
   transition:transform .2s; box-shadow:0 2px 4px rgba(0,0,0,0.2);
 }
-.tgl-inp:checked + .tgl-lbl { background:var(--color-correct); }
+.tgl-inp:checked + .tgl-lbl { background:var(--correct); }
 .tgl-inp:checked + .tgl-lbl::after { transform:translateX(24px); }
 
 /* Topic detail */
@@ -317,7 +325,7 @@
   border:2px solid var(--border); background:var(--panel);
   cursor:pointer; font-weight:700; color:var(--text-muted); transition:all .15s;
 }
-.btn-quick:hover { border-color:var(--color-neutral); color:var(--color-neutral); }
+.btn-quick:hover { border-color:var(--text-muted); color:var(--text-muted); }
 
 /* Game opts */
 .s-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
@@ -340,12 +348,12 @@
   color:var(--text); margin-bottom:10px; transition:all .15s;
   font-family:var(--font-body);
 }
-.btn-s-action:hover { border-color:var(--color-neutral); }
+.btn-s-action:hover { border-color:var(--text-muted); }
 .btn-danger {
   display:block; width:100%; font-size:var(--text-body); font-weight:700;
   padding:12px 16px; border-radius:12px; border:2px solid #f8d7da;
   background:#fff5f5; cursor:pointer; text-align:left;
-  color:var(--color-wrong); font-family:var(--font-body); transition:all .15s;
+  color:var(--wrong); font-family:var(--font-body); transition:all .15s;
 }
 .btn-danger:hover { background:#f8d7da; }
 .preview-box {
@@ -377,52 +385,16 @@
 .pnp-btn:active { transform:scale(0.92); background:var(--panel-2); }
 .pnp-del { background:#fff0f0; border-color:#ffc2c2; }
 .pnp-cancel { background:var(--panel-2); }
-.pin-err { text-align:center; color:var(--color-wrong); font-weight:700; font-size:var(--text-body); min-height:24px; }
+.pin-err { text-align:center; color:var(--wrong); font-weight:700; font-size:var(--text-body); min-height:24px; }
 
 /* ── VIZUÁLNÍ POMŮCKY ── */
 .no-visual { display:flex; align-items:center; justify-content:center; font-size:64px; opacity:.25; }
-
-/* ── ANIMACE ── */
-@keyframes scorePop {
-  0%   { transform:scale(1); }
-  40%  { transform:scale(1.6); color:var(--color-hint); }
-  100% { transform:scale(1); }
-}
-.score-pop { animation:scorePop .45s ease; }
-
-@keyframes shakeX {
-  0%,100% { transform:translateX(0); }
-  20%      { transform:translateX(-9px); }
-  40%      { transform:translateX(9px); }
-  60%      { transform:translateX(-6px); }
-  80%      { transform:translateX(6px); }
-}
-.shake { animation:shakeX .4s ease; }
-
-@keyframes slideInLeft {
-  from { transform:translateX(-30px); opacity:0; }
-  to   { transform:translateX(0); opacity:1; }
-}
-.slide-in { animation:slideInLeft .2s ease; }
-
-@keyframes flashGreen {
-  0%,100% { background:var(--panel); }
-  25%     { background:#d4edda; }
-}
-@keyframes flashRed {
-  0%,100% { background:var(--panel); }
-  25%     { background:#f8d7da; }
-}
-.flash-ok  { animation:flashGreen .8s ease; }
-.flash-bad { animation:flashRed .8s ease; }
 </style>
 </head>
 <body>
 
-<!-- CONFETTI -->
 <canvas id="confetti-canvas"></canvas>
 
-<!-- ══════════════════════════════════ HOME ══════════════════════════════════ -->
 <div id="scr-home" class="screen active">
   <div class="home-top"><a href="index.html" class="btn-back-index">← Rozcestník</a><button class="btn-settings" id="btn-home-settings">⚙️</button></div>
   <div class="home-mascot">🦊</div>
@@ -443,7 +415,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════ LEARN ══════════════════════════════════ -->
 <div id="scr-learn" class="screen">
   <div class="app-header">
     <button class="btn-icon" onclick="goHome()">← Domů</button>
@@ -464,7 +435,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════ TEST ══════════════════════════════════ -->
 <div id="scr-test" class="screen">
   <div class="app-header">
     <button class="btn-icon" onclick="goHome()">← Konec</button>
@@ -485,7 +455,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════ RESULTS ══════════════════════════════════ -->
 <div id="scr-results" class="screen">
   <div class="app-header">
     <div style="width:48px"></div>
@@ -506,7 +475,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════ SETTINGS ══════════════════════════════════ -->
 <div id="scr-settings" class="screen">
   <div class="app-header">
     <button class="btn-icon" onclick="goHome()">← Zpět</button>
@@ -554,7 +522,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════ PIN DIALOG ══════════════════════════════════ -->
 <div class="overlay" id="pin-overlay">
   <div class="dialog">
     <div class="dialog-title" id="pin-title">🔑 Zadej PIN</div>
@@ -703,7 +670,7 @@ const S = {
   lastPreset:'grade-2',
   score:0, badges:[],
   autoAdvance:true, autoDelay:3, maxTries:3, testLength:10,
-  inputMode:'auto',   // 'auto' | 'numeric' | 'choice'
+  inputMode:'auto',
   parentPinHash:null, lang:'cs',
   // session
   screen:'home', mode:'learn',
@@ -737,11 +704,8 @@ function loadAll(){
     const v=ld(k);
     S[k]=(v!==undefined&&sc.validate(v))?v:sc.default;
   }
-  // Zajisti že config není nikdy null — applyPreset ho nastaví
   if(S.config===null) applyPreset(S.preset);
-  // Tvrdý fallback: pokud je config stále null (custom+null edge case), padni na grade-2
   if(!S.config){ S.preset='grade-2'; S.lastPreset='grade-2'; applyPreset('grade-2'); }
-  // Doplň témata která v uložené config chybí (nová témata po aktualizaci)
   for(const key of Object.keys(TOPICS)){
     if(!S.config[key]){
       const td=TOPICS[key];
@@ -769,7 +733,6 @@ function validateCfg(cfg){
 function applyPreset(key){
   const p=PRESETS[key];
   if(p.config){
-    // Konkrétní preset — načti jeho config
     S.config=JSON.parse(JSON.stringify(p.config));
     for(const k of Object.keys(TOPICS)){
       if(!S.config[k]){
@@ -780,7 +743,6 @@ function applyPreset(key){
       }
     }
   } else {
-    // 'custom' — zachovej existující config; pokud je null, padni na lastPreset nebo grade-2
     if(!S.config){
       const fallbackKey=(S.lastPreset&&S.lastPreset!=='custom')?S.lastPreset:'grade-2';
       const fallback=PRESETS[fallbackKey];
@@ -909,7 +871,6 @@ const GEN={
         answer:bigger,distractors:[smaller,denom,Math.max(0,bigger-1)].filter(v=>v!==bigger),
         visual:null,hint:`Větší čitatel = větší zlomek (jmenovatel je stejný).`};
     }
-    // operations
     const denom=ri(2,6),n1=ri(1,denom-1),n2=ri(1,denom-n1);
     const ans=n1+n2;
     return {topic:'fractions',type:'numeric',
@@ -925,16 +886,12 @@ const GEN={
       answer:ans,operands:[a,b],visual:null,
       hint:`Sečti celé části, pak desetiny.`};
   },
-
   brackets(t){
     const lvl = TOPICS.brackets.levels[t.level] || TOPICS.brackets.levels['add-sub'];
     const {ops, max, nested} = lvl;
-
-    // Pomocné funkce
     const opSym = op => op === '×' ? '×' : op;
     const calc  = (a, op, b) => op==='+' ? a+b : op==='−' ? a-b : a*b;
 
-    // Generuj dvojici čísel tak aby výsledek byl kladný a v rozsahu
     function genPair(maxVal, op) {
       let a, b, att = 0;
       do {
@@ -951,7 +908,6 @@ const GEN={
     }
 
     if (nested) {
-      // Forma: (a OP1 b) OP2 (c OP3 d)
       const op1 = ops[rnd(ops.length)];
       const op2 = ops[rnd(ops.length)];
       const op3 = ops[rnd(ops.length)];
@@ -964,16 +920,13 @@ const GEN={
       if (answer <= 0 || answer > max) return null;
       const expression = `(${a} ${opSym(op1)} ${b}) ${opSym(op2)} (${c} ${opSym(op3)} ${d})`;
       const hint = `Nejdřív spočítej závorky: (${a} ${opSym(op1)} ${b}) = ${inner1}, (${c} ${opSym(op3)} ${d}) = ${inner2}`;
-      return {topic:'brackets', type:'numeric', expression, answer,
-        visual:null, hint};
+      return {topic:'brackets', type:'numeric', expression, answer, visual:null, hint};
     } else {
-      // Forma: a OP1 (b OP2 c)  nebo  (a OP1 b) OP2 c
       const leftBracket = Math.random() < 0.5;
       const op1 = ops[rnd(ops.length)];
       const op2 = ops[rnd(ops.length)];
 
       if (leftBracket) {
-        // (a OP1 b) OP2 c
         const [a, b] = genPair(Math.floor(max / 3), op1);
         const inner = calc(a, op1, b);
         if (inner <= 0) return null;
@@ -982,21 +935,17 @@ const GEN={
         if (answer <= 0 || answer > max) return null;
         const expression = `(${a} ${opSym(op1)} ${b}) ${opSym(op2)} ${c}`;
         const hint = `Nejdřív závorku: ${a} ${opSym(op1)} ${b} = ${inner}, pak ${inner} ${opSym(op2)} ${c}`;
-        return {topic:'brackets', type:'numeric', expression, answer,
-          visual:null, hint};
+        return {topic:'brackets', type:'numeric', expression, answer, visual:null, hint};
       } else {
-        // a OP1 (b OP2 c)
         const [b, c] = genPair(Math.floor(max / 3), op2);
         const inner = calc(b, op2, c);
         if (inner <= 0) return null;
         const [a, ] = genPair(Math.min(inner, Math.floor(max / 3)), op1);
-        // Ensure a OP1 inner stays positive
         const answer = calc(a, op1, inner);
         if (answer <= 0 || answer > max) return null;
         const expression = `${a} ${opSym(op1)} (${b} ${opSym(op2)} ${c})`;
         const hint = `Nejdřív závorku: ${b} ${opSym(op2)} ${c} = ${inner}, pak ${a} ${opSym(op1)} ${inner}`;
-        return {topic:'brackets', type:'numeric', expression, answer,
-          visual:null, hint};
+        return {topic:'brackets', type:'numeric', expression, answer, visual:null, hint};
       }
     }
   },
@@ -1038,7 +987,6 @@ function goHome(){ clearAuto(); showScreen('home'); renderHome(); }
 function renderHome(){
   const en=getEnabled();
   const has=en.length>0;
-  // badge
   if(S.preset!=='custom'){
     const p=PRESETS[S.preset];
     document.getElementById('hbm').textContent=`${p.emoji} ${p.label}`;
@@ -1065,20 +1013,18 @@ function nextQ(){
   if(!S.currentQ){goHome();return;}
   renderQ();
 }
-// Vrátí efektivní typ vstupu pro aktuální otázku dle nastavení inputMode
 function effectiveType(q){
   if(S.inputMode==='numeric') return 'numeric';
   if(S.inputMode==='choice'){
-    // pro numeric otázky vygeneruj distraktory pokud chybí
     if(!q.distractors) q.distractors=genDistractors(q.answer,3);
     return 'multiple-choice';
   }
-  return q.type; // 'auto' = přirozený typ otázky
+  return q.type;
 }
 
 function renderQ(){
   const q=S.currentQ, isL=S.mode==='learn', px=isL?'learn':'test';
-  // header bits — defenzivní null guardi pro každý element
+  
   if(isL){
     const ls=document.getElementById('learn-score');    if(ls) ls.textContent=`⭐ ${S.score}`;
     const lt=document.getElementById('learn-topic-lbl'); if(lt) lt.textContent=TOPICS[q.topic]?.label||'';
@@ -1090,24 +1036,30 @@ function renderQ(){
     const tl=document.getElementById('test-topic-lbl'); if(tl) tl.textContent=TOPICS[q.topic]?.label||'';
     const te=document.getElementById('test-topic-em');  if(te) te.textContent=TOPICS[q.topic]?.emoji||'';
   }
-  // expression
+  
   const exEl=document.getElementById(px+'-expr');
-  if(!exEl) return; // safety: pokud screen není v DOM, přeruš render
-  exEl.classList.remove('slide-in'); void exEl.offsetWidth; exEl.classList.add('slide-in');
-  exEl.innerHTML=`<span>${q.expression} =</span><span class="ans-disp" id="${px}-ans">?</span>`;
-  // feedback clear
+  if(exEl) {
+    exEl.innerHTML=`<span>${q.expression} =</span><span class="ans-disp" id="${px}-ans">?</span>`;
+    // Web Animations API namísto reflow hacku
+    exEl.animate([
+      { transform: 'translateX(-30px)', opacity: 0 },
+      { transform: 'translateX(0)', opacity: 1 }
+    ], { duration: 200, easing: 'ease' });
+  }
+
   const fb=document.getElementById(px+'-fb');
   if(fb){ fb.className='fb-banner'; fb.textContent=''; }
-  // visual — v testu se pomůcky skryjí (prozrazují odpověď), zobrazí se jen emoji tématu
+  
   if(S.mode==='learn') drawVisual(px+'-visual',q);
   else {
     const vEl=document.getElementById('test-visual');
     if(vEl) vEl.innerHTML=`<div class="no-visual">${TOPICS[q.topic]?.emoji||'🔢'}</div>`;
   }
-  // input
+  
   if(effectiveType(q)==='multiple-choice') renderMC(px+'-input',q);
   else renderNP(px+'-input',px);
 }
+
 function drawVisual(cid,q){
   const el=document.getElementById(cid); el.innerHTML='';
   if(q.visual==='dots'&&q.operands){
@@ -1123,25 +1075,17 @@ function drawVisual(cid,q){
     el.innerHTML=`<div class="no-visual">${TOPICS[q.topic]?.emoji||'🔢'}</div>`;
   }
 }
+
 function renderNP(cid,px){
-  // px je prefix screenu ('learn' nebo 'test') — zajišťuje unikátní ID btn-chk
   if(!px) px=S.mode==='learn'?'learn':'test';
   const el=document.getElementById(cid);
   if(!el) return;
   const isL=S.mode==='learn';
   el.innerHTML=`
     <div class="numpad">
-      <button class="np-btn" onclick="npPress('1')">1</button>
-      <button class="np-btn" onclick="npPress('2')">2</button>
-      <button class="np-btn" onclick="npPress('3')">3</button>
-      <button class="np-btn" onclick="npPress('4')">4</button>
-      <button class="np-btn" onclick="npPress('5')">5</button>
-      <button class="np-btn" onclick="npPress('6')">6</button>
-      <button class="np-btn" onclick="npPress('7')">7</button>
-      <button class="np-btn" onclick="npPress('8')">8</button>
-      <button class="np-btn" onclick="npPress('9')">9</button>
-      <button class="np-btn np-zero" onclick="npPress('0')">0</button>
-      <button class="np-btn np-del" onclick="npDel()">⌫</button>
+      ${[1,2,3,4,5,6,7,8,9].map(d=>`<button class="np-btn" data-val="${d}">${d}</button>`).join('')}
+      <button class="np-btn np-zero" data-val="0">0</button>
+      <button class="np-btn np-del">⌫</button>
     </div>
     <button class="btn-check" id="${px}-chk" onclick="checkAns()" disabled>✓ Zkontrolovat</button>
     ${isL?`<div class="learn-actions">
@@ -1150,18 +1094,35 @@ function renderNP(cid,px){
     </div>`:''}
   `;
 }
+
 function renderMC(cid,q){
   const el=document.getElementById(cid), isL=S.mode==='learn';
   const all=shuffle([q.answer,...q.distractors]);
   el.innerHTML=`
     <div class="mc-grid" id="mc-grid">
-      ${all.map(v=>`<button class="mc-btn" onclick="checkMC(${v})" data-v="${v}">${v}</button>`).join('')}
+      ${all.map(v=>`<button class="mc-btn" data-v="${v}">${v}</button>`).join('')}
     </div>
     ${isL?`<div class="learn-actions" style="max-width:360px;margin:8px auto 0">
       <button class="btn-hint" onclick="showHint()">💡 Nápověda</button>
       <button class="btn-skip" onclick="skipQ()">⏭️ Přeskočit</button>
     </div>`:''}`;
 }
+
+// Globální odchytávání kliknutí (Event Delegation) namísto mnoha onclicků
+document.addEventListener('click', e => {
+  const npBtn = e.target.closest('.np-btn');
+  if (npBtn) {
+    if (npBtn.classList.contains('np-del')) npDel();
+    else npPress(npBtn.dataset.val);
+    return;
+  }
+  const mcBtn = e.target.closest('.mc-btn');
+  if (mcBtn && !mcBtn.disabled) {
+    checkMC(Number(mcBtn.dataset.v));
+    return;
+  }
+});
+
 function npPress(d){ if(S.answered||S.buf.length>=7) return; S.buf+=d; updateAnsDisp(); }
 function npDel(){ if(S.answered) return; S.buf=S.buf.slice(0,-1); updateAnsDisp(); }
 function updateAnsDisp(){
@@ -1169,13 +1130,16 @@ function updateAnsDisp(){
   const el=document.getElementById(px+'-ans'); if(el) el.textContent=S.buf||'?';
   const b=document.getElementById(px+'-chk'); if(b) b.disabled=!S.buf;
 }
+
 document.addEventListener('keydown',e=>{
+  if(e.repeat) return; // Debounce podržení klávesy
   if(S.screen!=='learn'&&S.screen!=='test') return;
-  if(S.currentQ&&effectiveType(S.currentQ)!=='numeric') return; // výběr — klávesnice nefunguje
+  if(S.currentQ&&effectiveType(S.currentQ)!=='numeric') return; 
   if(e.key>='0'&&e.key<='9') npPress(e.key);
   else if(e.key==='Backspace') npDel();
   else if(e.key==='Enter') checkAns();
 });
+
 function checkAns(){
   if(S.answered||!S.buf) return;
   const q=S.currentQ;
@@ -1186,32 +1150,27 @@ function checkAns(){
   const ok=q.topic==='decimals'?Math.abs(ua-q.answer)<.001:(ua===q.answer);
   if(ok) onCorrect(); else onWrong(ua);
 }
+
 function checkMC(val){
   if(S.answered) return;
   const q=S.currentQ, ok=(val===q.answer);
 
   if(ok){
-    // Správná odpověď — zablokuj vše, zvýrazni zeleně
     document.querySelectorAll('.mc-btn').forEach(b=>{
       b.disabled=true;
       if(+b.dataset.v===q.answer) b.classList.add('ok');
     });
     onCorrect();
   } else {
-    // Špatná odpověď — zablokuj a zčervej jen kliknuté tlačítko
     const badBtn=document.querySelector(`.mc-btn[data-v="${val}"]`);
     if(badBtn){ badBtn.classList.add('bad'); badBtn.disabled=true; }
-
-    onWrong(val); // může nastavit S.answered=true pokud vyčerpány pokusy
-
+    onWrong(val); 
     if(S.answered){
-      // Pokusy vyčerpány — teprve TEĎ odhal správnou odpověď a zablokuj zbytek
       document.querySelectorAll('.mc-btn').forEach(b=>{
         b.disabled=true;
         if(+b.dataset.v===q.answer) b.classList.add('ok');
       });
     }
-    // Jinak ostatní tlačítka zůstanou aktivní pro další pokus
   }
 }
 
@@ -1224,7 +1183,8 @@ function onCorrect(){
   sv('score',S.score); checkBadges();
   const px=S.mode==='learn'?'learn':'test';
   const ad=document.getElementById(px+'-ans');
-  if(ad){ad.textContent=S.currentQ.answer;ad.style.color='var(--color-correct)';}
+  if(ad){ad.textContent=S.currentQ.answer;ad.style.color='var(--correct)';}
+  
   if(S.mode==='learn'){
     setMascot('learn-mascot','happy');
     showFB('learn-fb','correct','🎉 Výborně!');
@@ -1232,28 +1192,41 @@ function onCorrect(){
     scheduleNext(S.autoDelay);
   } else {
     const card=document.getElementById('test-qcard');
-    card.classList.remove('flash-ok','flash-bad'); void card.offsetWidth; card.classList.add('flash-ok');
+    card.animate([
+      { background: 'var(--panel)' },
+      { background: '#d4edda', offset: 0.25 },
+      { background: 'var(--panel)' }
+    ], { duration: 800, easing: 'ease' });
+    
     launchConfetti(); animScore('test-score');
     if(S.qIdx>=S.testLength) setTimeout(showResults,800);
     else setTimeout(()=>{nextQ();},800);
   }
 }
+
 function onWrong(ua){
   S.tries++;
   if(S.mode==='test'){
     S.sessWrong++; S.sessHistory.push({q:S.currentQ,correct:false,ua}); S.qIdx++;
     const ad=document.getElementById('test-ans');
-    if(ad){ad.textContent=S.currentQ.answer;ad.style.color='var(--color-correct)';}
+    if(ad){ad.textContent=S.currentQ.answer;ad.style.color='var(--correct)';}
     showFB('test-fb','wrong',`❌ Správně: ${S.currentQ.answer}`);
+    
     const card=document.getElementById('test-qcard');
-    card.classList.remove('flash-ok','flash-bad'); void card.offsetWidth; card.classList.add('flash-bad');
+    card.animate([
+      { background: 'var(--panel)' },
+      { background: '#f8d7da', offset: 0.25 },
+      { background: 'var(--panel)' }
+    ], { duration: 800, easing: 'ease' });
+
     if(S.qIdx>=S.testLength) setTimeout(showResults,1500);
     else setTimeout(()=>{nextQ();},1500);
     return;
   }
-  // learn
+  
   setMascot('learn-mascot', S.tries>=S.maxTries?'hint':'sad');
   shakeAns();
+  
   if(S.tries<S.maxTries){
     const left=S.maxTries-S.tries;
     showFB('learn-fb','wrong',`💡 Zkus to znovu! (ještě ${left} ${left===1?'pokus':'pokusy'})`);
@@ -1262,47 +1235,67 @@ function onWrong(ua){
     S.sessHistory.push({q:S.currentQ,correct:false,ua});
     showFB('learn-fb','hint',`👉 Správně je: ${S.currentQ.answer}`);
     const ad=document.getElementById('learn-ans');
-    if(ad){ad.textContent=S.currentQ.answer;ad.style.color='var(--color-correct)';}
+    if(ad){ad.textContent=S.currentQ.answer;ad.style.color='var(--correct)';}
     scheduleNext(S.autoDelay*1.5);
   }
   S.buf=''; updateAnsDisp();
 }
+
 function showFB(id,type,txt){
   const el=document.getElementById(id); if(!el)return;
   el.className='fb-banner '+type; el.textContent=txt;
 }
+
 function shakeAns(){
   const px=S.mode==='learn'?'learn':'test';
   const el=document.getElementById(px+'-ans'); if(!el)return;
-  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  el.animate([
+    { transform: 'translateX(0)' },
+    { transform: 'translateX(-9px)' },
+    { transform: 'translateX(9px)' },
+    { transform: 'translateX(-6px)' },
+    { transform: 'translateX(6px)' },
+    { transform: 'translateX(0)' }
+  ], { duration: 400, easing: 'ease' });
 }
+
 function showHint(){
   if(!S.currentQ)return;
   showFB('learn-fb','hint',`💡 ${S.currentQ.hint}`);
   setMascot('learn-mascot','hint');
 }
+
 function skipQ(){ clearAuto(); S.qIdx++; nextQ(); }
+
 function scheduleNext(delaySec){
   clearAuto();
   if(!S.autoAdvance||delaySec===null)return;
   S.autoTimer=setTimeout(()=>{ if(S.screen==='learn'){nextQ();} },delaySec*1000);
 }
+
 function clearAuto(){ if(S.autoTimer){clearTimeout(S.autoTimer);S.autoTimer=null;} }
+
 function animScore(id){
   const el=document.getElementById(id); if(!el)return;
   el.textContent=`⭐ ${S.score}`;
-  el.classList.remove('score-pop'); void el.offsetWidth; el.classList.add('score-pop');
+  el.animate([
+    { transform: 'scale(1)' },
+    { transform: 'scale(1.6)', color: 'var(--hint)', offset: 0.4 },
+    { transform: 'scale(1)' }
+  ], { duration: 450, easing: 'ease' });
 }
+
 function setMascot(id,state){
   const el=document.getElementById(id); if(!el)return;
   el.className='mascot '+(state==='happy'?'happy':state==='sad'?'sad':state==='hint'?'hint':'');
 }
+
 function checkBadges(){
   for(const m of [10,50,100,500]){
     if(S.score>=m&&!S.badges.includes(m)){
       S.badges.push(m); sv('badges',S.badges);
       const b=document.createElement('div');
-      b.style.cssText='position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--color-hint);color:#fff;padding:12px 24px;border-radius:24px;font-family:var(--font-display);font-size:var(--text-ui);font-weight:700;z-index:5000;box-shadow:var(--shadow)';
+      b.style.cssText='position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--hint);color:#fff;padding:12px 24px;border-radius:24px;font-family:var(--font-display);font-size:var(--text-ui);font-weight:700;z-index:5000;box-shadow:var(--shadow)';
       b.textContent=`🏅 Gratulace! Dosáhl jsi ${m} ⭐!`;
       document.body.appendChild(b); setTimeout(()=>b.remove(),3000);
     }
@@ -1443,7 +1436,7 @@ function renderPreview(){
   const el=document.getElementById('preview-box');
   if(!en.length){
     el.innerHTML='⚠️ Žádné téma není zapnuté — VÝUKA a TEST jsou neaktivní.';
-    el.style.borderColor='var(--color-wrong)';
+    el.style.borderColor='var(--wrong)';
   } else {
     el.innerHTML='ℹ️ Procvičujeme: '+en.map(t=>{
       if(t.config==='tables') return `${t.label} (${[...t.tables].sort((a,b)=>a-b).join(',')})`;
@@ -1527,7 +1520,6 @@ function drawDots(canvas,a,b,op){
   const gap=r*2.6;
   const colors={A:'#4a90d9',B:'#5cb85c',X:'#e05c6a',fade:'#dde4f0'};
   const startX=(W-(total-1)*gap)/2, midY=H*.42;
-  // draw A dots
   for(let i=0;i<a;i++){
     ctx.beginPath(); ctx.arc(startX+i*gap,midY,r,0,Math.PI*2);
     ctx.fillStyle=colors.A; ctx.fill();
@@ -1550,7 +1542,6 @@ function drawDots(canvas,a,b,op){
       ctx.moveTo(x+r*.55,midY-r*.55); ctx.lineTo(x-r*.55,midY+r*.55); ctx.stroke();
     }
   }
-  // labels
   ctx.font=`bold ${Math.max(12,Math.floor(r*.9))}px Nunito,sans-serif`;
   ctx.textAlign='center'; ctx.fillStyle='#2d3a52';
   const labY=midY+r+14;
@@ -1627,7 +1618,7 @@ function makeFracSVG(numer,denom){
 }
 
 // ══════════════════════════════════════════════════
-// 15. KONFETY (z příručky Appendix A)
+// 15. KONFETY
 // ══════════════════════════════════════════════════
 function launchConfetti(){
   const canvas=document.getElementById('confetti-canvas');

@@ -88,3 +88,12 @@
   color: var(--blue);
   background: var(--panel-2);
 }
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  overflow: hidden; /* Zabrání nechtěnému scrollování aplikace na mobilu */
+}
