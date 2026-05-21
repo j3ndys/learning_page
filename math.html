@@ -8,46 +8,19 @@
 <meta name="apple-mobile-web-app-title" content="Počítáme s Matýskem">
 <meta name="theme-color" content="#4a90d9">
 <title>Počítáme s Matýskem 🦊</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
 <style>
-/* ── CSS PROMĚNNÉ ── */
-:root {
-  --color-correct: #5cb85c;
-  --color-wrong:   #e05c6a;
-  --color-hint:    #ffb347;
-  --color-neutral: #4a90d9;
-  --grade-1: #ff9f43; --grade-2: #48dbfb; --grade-3: #1dd1a1;
-  --grade-4: #a29bfe; --grade-5: #fd79a8; --grade-custom: #b2bec3;
-  --grade-color: var(--grade-2);
-  --bg: #fef9f0; --panel: #ffffff; --panel-2: #f0f6ff;
-  --border: #dde4f0; --text: #2d3a52; --text-muted: #7a88a8;
-  --radius: 16px; --shadow: 0 4px 22px rgba(74,100,180,0.12);
-  --font-display: 'Baloo 2', cursive; --font-body: 'Nunito', sans-serif;
-  --text-label:   clamp(11px,1.5vw,14px);
-  --text-body:    clamp(14px,2vw,18px);
-  --text-ui:      clamp(16px,2.5vw,22px);
-  --text-heading: clamp(20px,3.5vw,32px);
-  --text-display: clamp(28px,6vw,56px);
-  --text-numpad:  clamp(20px,4vw,36px);
-}
-
-/* ── RESET ── */
-*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-html,body { height:100%; overflow:hidden; }
-body {
-  font-family:var(--font-body); background:var(--bg); color:var(--text);
-  display:flex; flex-direction:column; height:100dvh;
-  -webkit-tap-highlight-color:transparent;
-  user-select:none; -webkit-user-select:none;
-  touch-action:manipulation;
-}
+/* ══════════════════════════════════════════════════════
+   math.html — specifické styly
+   Sdílené proměnné, reset, body, btn-back-index
+   jsou definovány v shared.css.
+   ══════════════════════════════════════════════════════ */
 
 /* ── SCREENS ── */
 .screen { display:none; flex-direction:column; height:100%; overflow:hidden; }
 .screen.active { display:flex; }
 
-/* ── HEADER ── */
+/* ── HEADER (grade-color accent) ── */
 .app-header {
   display:flex; align-items:center; justify-content:space-between;
   padding:10px 16px; background:var(--panel);
@@ -77,14 +50,6 @@ body {
   gap:16px; padding:20px 20px 28px; overflow-y:auto;
 }
 .home-top { width:100%; display:flex; justify-content:space-between; align-items:center; }
-.btn-back-index {
-  font-family:var(--font-body); font-size:var(--text-label); font-weight:700;
-  color:var(--text-muted); text-decoration:none; padding:6px 14px;
-  border:2px solid var(--border); border-radius:20px; background:var(--panel);
-  transition:all .15s; touch-action:manipulation;
-  display:inline-flex; align-items:center; white-space:nowrap;
-}
-.btn-back-index:hover { border-color:var(--color-neutral); color:var(--color-neutral); }
 .btn-settings {
   background:none; border:2px solid var(--border); border-radius:50%;
   width:50px; height:50px; font-size:22px; cursor:pointer;
@@ -285,7 +250,8 @@ body {
 .topic-ico { font-size:20px; }
 .topic-lbl { flex:1; font-size:var(--text-body); font-weight:700; }
 .topic-sum { font-size:var(--text-label); color:var(--text-muted); margin-right:8px; max-width:120px; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-/* Toggle */
+
+/* Toggle — math verze (větší než clock) */
 .tgl-wrap { position:relative; width:52px; height:28px; flex-shrink:0; }
 .tgl-inp  { opacity:0; width:0; height:0; position:absolute; }
 .tgl-lbl  {
@@ -299,6 +265,7 @@ body {
 }
 .tgl-inp:checked + .tgl-lbl { background:var(--color-correct); }
 .tgl-inp:checked + .tgl-lbl::after { transform:translateX(24px); }
+
 /* Topic detail */
 .topic-detail { padding:12px 14px 14px; border-top:1px solid var(--border); background:var(--panel-2); display:none; }
 .topic-detail.open { display:block; }
@@ -325,6 +292,7 @@ body {
   cursor:pointer; font-weight:700; color:var(--text-muted); transition:all .15s;
 }
 .btn-quick:hover { border-color:var(--color-neutral); color:var(--color-neutral); }
+
 /* Game opts */
 .s-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
 .s-row:last-child { margin-bottom:0; }
@@ -337,7 +305,8 @@ body {
 }
 .opt-btn.active { border-color:var(--grade-color); background:color-mix(in srgb,var(--grade-color) 14%,white); }
 .opt-btn:hover  { border-color:var(--grade-color); }
-/* Buttons in settings */
+
+/* Settings akční tlačítka */
 .btn-s-action {
   display:block; width:100%; font-size:var(--text-body); font-weight:700;
   padding:12px 16px; border-radius:12px; border:2px solid var(--border);
@@ -384,10 +353,10 @@ body {
 .pnp-cancel { background:var(--panel-2); }
 .pin-err { text-align:center; color:var(--color-wrong); font-weight:700; font-size:var(--text-body); min-height:24px; }
 
-/* ── CONFETTI ── */
-#confetti-canvas { position:fixed; inset:0; pointer-events:none; z-index:9999; }
+/* ── VIZUÁLNÍ POMŮCKY ── */
+.no-visual { display:flex; align-items:center; justify-content:center; font-size:64px; opacity:.25; }
 
-/* ── ANIMATIONS ── */
+/* ── ANIMACE ── */
 @keyframes scorePop {
   0%   { transform:scale(1); }
   40%  { transform:scale(1.6); color:var(--color-hint); }
@@ -420,9 +389,6 @@ body {
 }
 .flash-ok  { animation:flashGreen .8s ease; }
 .flash-bad { animation:flashRed .8s ease; }
-
-/* ── NO VISUAL PLACEHOLDER ── */
-.no-visual { display:flex; align-items:center; justify-content:center; font-size:64px; opacity:.25; }
 </style>
 </head>
 <body>
