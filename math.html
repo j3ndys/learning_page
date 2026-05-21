@@ -17,9 +17,10 @@
    ══════════════════════════════════════════════════════ */
 
 /* ── SCREENS ── */
-.screen { display:none; flex-direction:column; height:100dvh; overflow:hidden; }
+/* Screen je flex-child body (body má height:100dvh v shared.css).
+   NESMÍ mít vlastní height:100dvh — to by ji udělalo vyšší než viewport. */
+.screen { display:none; flex-direction:column; flex:1 1 0; min-height:0; overflow:hidden; }
 .screen.active { display:flex; }
-/* q-wrap must fill remaining height so input-area stays on screen */
 .screen > .app-header { flex-shrink:0; }
 .screen > .prog-bar   { flex-shrink:0; }
 .screen > .q-wrap     { flex:1 1 0; min-height:0; }
@@ -90,14 +91,14 @@
 
 /* ── QUESTION LAYOUT ── */
 .q-wrap { flex:1 1 0; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
-/* visual-area gets remaining space; q-card and input-area shrink if needed */
-.q-wrap .visual-area    { flex:1 1 0; min-height:40px; }
-.q-wrap .q-card         { flex-shrink:0; }
-.q-wrap .input-area     { flex-shrink:0; }
+/* visual-area scvrkne se ale ne pod minimum; q-card a input-area se nikdy neoříznou */
+.q-wrap .visual-area { flex:1 1 0; min-height:40px; max-height:38vh; }
+.q-wrap .q-card      { flex-shrink:0; }
+.q-wrap .input-area  { flex-shrink:0; }
 .prog-bar { height:6px; background:var(--border); flex-shrink:0; }
 .prog-fill { height:100%; background:var(--grade-color); transition:width .4s ease; }
 .visual-area {
-  flex:1; min-height:0; display:flex; align-items:center; justify-content:center;
+  display:flex; align-items:center; justify-content:center;
   padding:12px; background:var(--panel-2); overflow:hidden;
 }
 .q-card {
@@ -142,13 +143,14 @@
 /* Celá input-area musí být viditelná — numpad tlačítka menší aby se vše vešlo */
 .input-area {
   flex-shrink:0; background:var(--panel);
-  padding:6px 12px 10px;
-  display:flex; flex-direction:column; align-items:center; gap:6px;
-  overflow:visible;   /* never clip the check button */
+  padding:8px 16px 12px;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  overflow:visible;
 }
+/* Přímé děti input-area dostanou plnou šířku (max 420px) */
+.input-area > * { width:100%; max-width:420px; }
 .numpad {
   display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
-  width:100%; max-width:320px;
 }
 .np-btn {
   font-family:var(--font-display); font-size:clamp(18px,4vw,30px); font-weight:700;
@@ -161,19 +163,18 @@
 .np-zero { grid-column:1/3; }
 .np-del  { background:#fff0f0; border-color:#ffc2c2; }
 .btn-check {
-  width:100%; max-width:320px;
   font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
-  padding:12px; border:none; border-radius:12px;
+  padding:14px; border:none; border-radius:12px;
   background:var(--color-correct); color:#fff; cursor:pointer;
   transition:transform .15s,opacity .15s;
 }
 .btn-check:hover { transform:scale(1.02); }
 .btn-check:active { transform:scale(0.97); }
 .btn-check:disabled { opacity:.4; cursor:not-allowed; transform:none; }
-.learn-actions { display:flex; gap:8px; width:100%; max-width:320px; }
+.learn-actions { display:flex; gap:8px; }
 .btn-hint,.btn-skip {
   flex:1; font-family:var(--font-body); font-size:var(--text-body); font-weight:700;
-  padding:8px; border-radius:10px; cursor:pointer;
+  padding:10px; border-radius:10px; cursor:pointer;
   border:2px solid var(--border); background:var(--panel); color:var(--text-muted);
   transition:all .15s; touch-action:manipulation;
 }
@@ -183,13 +184,14 @@
 /* ── MULTIPLE CHOICE ── */
 .mc-grid {
   display:grid; grid-template-columns:1fr 1fr; gap:10px;
-  max-width:360px; margin:0 auto 10px;
+  width:100%; max-width:420px;  /* full width of input-area */
 }
 .mc-btn {
-  font-family:var(--font-display); font-size:var(--text-ui); font-weight:700;
-  min-height:72px; border:3px solid var(--border); border-radius:14px;
+  font-family:var(--font-display); font-size:clamp(22px,4vw,36px); font-weight:700;
+  min-height:80px; border:3px solid var(--border); border-radius:14px;
   background:var(--panel); color:var(--text); cursor:pointer;
   transition:all .15s; touch-action:manipulation;
+  display:flex; align-items:center; justify-content:center;
 }
 .mc-btn:hover:not(:disabled) { border-color:var(--grade-color); transform:scale(1.04); }
 .mc-btn:active:not(:disabled) { transform:scale(0.95); }
