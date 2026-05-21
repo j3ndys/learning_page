@@ -17,8 +17,12 @@
    ══════════════════════════════════════════════════════ */
 
 /* ── SCREENS ── */
-.screen { display:none; flex-direction:column; height:100%; overflow:hidden; }
+.screen { display:none; flex-direction:column; height:100dvh; overflow:hidden; }
 .screen.active { display:flex; }
+/* q-wrap must fill remaining height so input-area stays on screen */
+.screen > .app-header { flex-shrink:0; }
+.screen > .prog-bar   { flex-shrink:0; }
+.screen > .q-wrap     { flex:1 1 0; min-height:0; }
 
 /* ── HEADER (grade-color accent) ── */
 .app-header {
@@ -85,7 +89,11 @@
 .home-hint.show { display:block; }
 
 /* ── QUESTION LAYOUT ── */
-.q-wrap { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+.q-wrap { flex:1 1 0; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+/* visual-area gets remaining space; q-card and input-area shrink if needed */
+.q-wrap .visual-area    { flex:1 1 0; min-height:40px; }
+.q-wrap .q-card         { flex-shrink:0; }
+.q-wrap .input-area     { flex-shrink:0; }
 .prog-bar { height:6px; background:var(--border); flex-shrink:0; }
 .prog-fill { height:100%; background:var(--grade-color); transition:width .4s ease; }
 .visual-area {
@@ -98,6 +106,14 @@
   padding:16px 20px 12px; box-shadow:0 -4px 18px rgba(0,0,0,0.08);
 }
 .q-meta { font-size:var(--text-label); color:var(--text-muted); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+.q-meta .topic-lbl {
+  font-family:var(--font-body);
+  font-size:var(--text-label);
+  font-weight:700;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
 .mascot { font-size:22px; transition:filter .3s; display:inline-block; }
 .mascot.happy { filter:drop-shadow(0 0 8px #5cb85c); }
 .mascot.sad   { filter:drop-shadow(0 0 8px #e05c6a); }
@@ -128,6 +144,7 @@
   flex-shrink:0; background:var(--panel);
   padding:6px 12px 10px;
   display:flex; flex-direction:column; align-items:center; gap:6px;
+  overflow:visible;   /* never clip the check button */
 }
 .numpad {
   display:grid; grid-template-columns:repeat(3,1fr); gap:6px;
@@ -436,7 +453,7 @@
     <div class="q-card" id="learn-qcard">
       <div class="q-meta">
         <span class="mascot" id="learn-mascot">🦊</span>
-        <span id="learn-topic-lbl"></span>
+        <span class="topic-lbl" id="learn-topic-lbl"></span>
       </div>
       <div class="q-expr" id="learn-expr"></div>
       <div class="fb-banner" id="learn-fb"></div>
@@ -458,7 +475,7 @@
       <div class="no-visual"><span id="test-topic-em">➕</span></div>
     </div>
     <div class="q-card" id="test-qcard">
-      <div class="q-meta"><span id="test-topic-lbl"></span></div>
+      <div class="q-meta"><span class="topic-lbl" id="test-topic-lbl"></span></div>
       <div class="q-expr" id="test-expr"></div>
       <div class="fb-banner" id="test-fb"></div>
     </div>
