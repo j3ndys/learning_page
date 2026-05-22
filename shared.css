@@ -1,44 +1,58 @@
 /* ═══════════════════════════════════════════════════════════════
    shared.css · Výukové aplikace · Design System
-   ───────────────────────────────────────────────────────────────
-   Tento soubor definuje sdílenou paletu a základní komponenty.
-   Moduly (math.html, clock.html…) mají CSS inline, ale sdílejí
-   stejné hodnoty proměnných. shared.css primárně používá index.html.
-
-   Konvence proměnných (obě varianty jsou záměrně ekvivalentní):
-     Dlouhá (math.html):  --bg, --panel, --panel-2, --border, --text, --text-muted
-     Krátká (clock.html): --bg, --panel, --p2,      --brd,    --txt,  --mut
+   Importuje se z: index.html, math.html, clock.html
    ═══════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;600;700;800;900&display=swap');
 
-/* ── PROMĚNNÉ ── */
+/* ══════════════════════════════════════════════════════
+   CSS PROMĚNNÉ
+   ══════════════════════════════════════════════════════ */
 :root {
-  /* Paleta pozadí & panelů */
-  --bg:       #fef9f0;
-  --panel:    #ffffff;
-  --panel-2:  #f0f6ff;
-  --p2:       #f0f6ff;      /* alias pro clock.html kompatibilitu */
+  /* Barvy hodinových ručiček (clock.html) */
+  --H:   #e05c6a;
+  --M:   #4a90d9;
+
+  /* Základní paleta */
+  --bg:       #f5f7fb;
+  --card:     #ffffff;
+  --panel:    #ffffff;   /* alias pro math.html */
+  --side:     #f0f4fc;
+  --panel-2:  #f0f4fc;   /* alias pro math.html */
+  --p2:       #f0f4fc;   /* alias krátký */
 
   /* Okraje & text */
-  --border:   #dde4f0;
-  --brd:      #dde4f0;      /* alias */
-  --text:     #2d3a52;
-  --txt:      #2d3a52;      /* alias */
-  --text-muted: #7a88a8;
-  --mut:      #7a88a8;      /* alias */
+  --brd:        #dde4f0;
+  --border:     #dde4f0;  /* alias */
+  --txt:        #2d3a52;
+  --text:       #2d3a52;  /* alias */
+  --mut:        #7a88a8;
+  --text-muted: #7a88a8;  /* alias */
 
   /* Funkční barvy */
-  --correct:  #5cb85c;
-  --wrong:    #e05c6a;
-  --hint:     #ffb347;
-  --blue:     #4a90d9;
-  --ok:       #5cb85c;      /* alias */
-  --warn:     #ffb347;      /* alias */
+  --ok:           #5cb85c;
+  --correct:      #5cb85c;  /* alias */
+  --color-correct:#5cb85c;  /* alias math.html */
+  --warn:         #ffb347;
+  --hint:         #ffb347;  /* alias */
+  --color-hint:   #ffb347;  /* alias math.html */
+  --wrong:        #e05c6a;
+  --color-wrong:  #e05c6a;  /* alias math.html */
+  --blue:         #4a90d9;
+  --color-neutral:#4a90d9;  /* alias math.html */
 
-  /* Barvy modulů (accent) */
-  --clr-math:  #5cb85c;     /* Matematika – zelená (Matýsek) */
-  --clr-clock: #4a90d9;     /* Hodiny – modrá */
+  /* Barvy ročníků (math.html) */
+  --grade-1: #ff9f43;
+  --grade-2: #48dbfb;
+  --grade-3: #1dd1a1;
+  --grade-4: #a29bfe;
+  --grade-5: #fd79a8;
+  --grade-custom: #b2bec3;
+  --grade-color: var(--grade-2);
+
+  /* Barvy modulů (index.html) */
+  --clr-math:  #5cb85c;
+  --clr-clock: #4a90d9;
 
   /* Písma */
   --fh: 'Baloo 2', cursive;
@@ -51,49 +65,236 @@
   --text-body:    clamp(14px, 2vw,   18px);
   --text-ui:      clamp(16px, 2.5vw, 22px);
   --text-heading: clamp(20px, 3.5vw, 32px);
+  --text-display: clamp(28px, 6vw,   56px);
+  --text-numpad:  clamp(20px, 4vw,   36px);
 
   /* Layout */
-  --radius:  16px;
-  --r:       16px;          /* alias */
-  --shadow:  0 4px 22px rgba(74,100,180,0.12);
-  --sh:      0 4px 22px rgba(74,100,180,0.12); /* alias */
-  --shadow-card: 0 8px 36px rgba(74,100,180,0.16);
+  --r:           14px;
+  --radius:      16px;    /* alias math.html */
+  --sh:          0 2px 16px rgba(74,100,180,.10);
+  --shadow:      0 4px 22px rgba(74,100,180,.12);  /* alias math.html */
+  --shadow-card: 0 8px 36px rgba(74,100,180,.16);
 }
 
-/* ── RESET ── */
+/* ══════════════════════════════════════════════════════
+   RESET
+   ══════════════════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100dvh; overflow: hidden; }
+body {
+  font-family: var(--fb);
+  color: var(--txt);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
+}
+button, select, input { font-family: inherit; touch-action: manipulation; }
 
-/* ── TLAČÍTKO ZPĚT DO ROZCESTNÍKU ── */
-/* Použití: <a href="index.html" class="btn-back-index">← Rozcestník</a> */
+/* ══════════════════════════════════════════════════════
+   TOPBAR  (clock.html)
+   ══════════════════════════════════════════════════════ */
+.topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 48px;
+  background: var(--card);
+  border-bottom: 1px solid var(--brd);
+  box-shadow: var(--sh);
+}
+.topbar-logo {
+  font-family: var(--fh);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--H);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+}
+.topbar-logo span { color: var(--M); }
+.stars-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff8e7;
+  border: 1.5px solid #ffcc66;
+  border-radius: 50px;
+  padding: 3px 10px;
+  font-size: .82rem;
+  font-weight: 800;
+  color: #b8860b;
+}
+.tbtn {
+  border: 1.5px solid var(--brd);
+  background: var(--side);
+  border-radius: 50px;
+  padding: 4px 11px;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--mut);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.tbtn:hover { border-color: var(--M); color: var(--M); background: #e8f0ff; }
+
+/* ══════════════════════════════════════════════════════
+   ZPĚT DO ROZCESTNÍKU  (clock.html + math.html)
+   ══════════════════════════════════════════════════════ */
+.btn-back,
 .btn-back-index {
   font-family: var(--fb);
-  font-size: var(--text-label);
+  font-size: .78rem;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--mut);
   text-decoration: none;
-  padding: 6px 14px;
-  border: 2px solid var(--border);
-  border-radius: 20px;
-  background: var(--panel);
+  padding: 4px 11px;
+  border: 1.5px solid var(--brd);
+  border-radius: 50px;
+  background: var(--side);
   transition: all .15s;
-  touch-action: manipulation;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   white-space: nowrap;
   cursor: pointer;
 }
-.btn-back-index:hover {
-  border-color: var(--blue);
-  color: var(--blue);
-  background: var(--panel-2);
+.btn-back:hover,
+.btn-back-index:hover { border-color: var(--M); color: var(--M); background: #e8f0ff; }
+
+/* ══════════════════════════════════════════════════════
+   SETTINGS PANEL  (clock.html)
+   ══════════════════════════════════════════════════════ */
+#set-wrap {
+  flex-shrink: 0;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height .28s ease;
+  background: #fffbf0;
+  border-bottom: 1.5px solid #ffe0a0;
 }
-body {
+#set-wrap.open { max-height: 200px; }
+.set-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: center;
+  padding: 8px 14px;
+}
+.set-row { display: flex; align-items: center; gap: 7px; }
+.set-row label { font-size: .8rem; font-weight: 700; cursor: pointer; }
+
+/* Toggle switch */
+.sw { position: relative; display: inline-block; width: 40px; height: 22px; }
+.sw input { opacity: 0; width: 0; height: 0; }
+.sw-sl {
+  position: absolute; cursor: pointer; inset: 0;
+  background: #ccd; border-radius: 50px; transition: .25s;
+}
+.sw-sl::before {
+  content: ''; position: absolute;
+  height: 16px; width: 16px; left: 3px; bottom: 3px;
+  background: #fff; border-radius: 50%; transition: .25s;
+}
+input:checked + .sw-sl { background: var(--M); }
+input:checked + .sw-sl::before { transform: translateX(18px); }
+
+/* Numeric stepper */
+.set-num { display: flex; align-items: center; gap: 4px; }
+.set-num button {
+  width: 24px; height: 24px;
+  border: 1.5px solid var(--brd); border-radius: 8px;
+  background: white; color: var(--txt);
+  font-size: .95rem; font-weight: 900;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.set-num button:hover { background: var(--M); color: #fff; border-color: var(--M); }
+.set-num span { min-width: 24px; text-align: center; font-weight: 800; font-size: .88rem; }
+
+/* ══════════════════════════════════════════════════════
+   TABS  (clock.html)
+   ══════════════════════════════════════════════════════ */
+.tabs {
+  flex-shrink: 0;
+  display: flex;
+  gap: 4px;
+  padding: 7px 14px 0;
+  background: var(--card);
+  border-bottom: 2px solid var(--brd);
+}
+.tab {
+  font-family: var(--fh);
+  font-size: .9rem;
+  font-weight: 700;
+  padding: 6px 18px;
+  border-radius: var(--r) var(--r) 0 0;
+  border: 1.5px solid transparent;
+  border-bottom: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--mut);
+  transition: all .15s;
+  position: relative;
+  bottom: -2px;
+}
+.tab.on {
+  background: var(--bg);
+  border-color: var(--brd);
+  color: var(--txt);
+  border-bottom-color: var(--bg);
+}
+.tab:hover:not(.on) { color: var(--txt); background: #edf0ff; }
+
+/* ══════════════════════════════════════════════════════
+   MAIN AREA & MODES  (clock.html only — math.html nepoužívá main ani .mode)
+   ══════════════════════════════════════════════════════ */
+/* POZOR: tyto rules platí globálně — math.html je přebíjí pomocí `main { all:unset }` */
+main {
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  overflow: hidden; /* Zabrání nechtěnému scrollování aplikace na mobilu */
+  padding: 10px;
+}
+.mode { display: none; flex: 1 1 0; min-height: 0; flex-direction: column; }
+.mode.on { display: flex; }
+
+/* ══════════════════════════════════════════════════════
+   FEEDBACK  (clock.html)
+   ══════════════════════════════════════════════════════ */
+.fb-row { flex-shrink: 0; text-align: center; }
+.fb {
+  display: inline-block;
+  font-family: var(--fh);
+  font-size: .9rem;
+  font-weight: 800;
+  padding: 5px 14px;
+  border-radius: 9px;
+  min-height: 30px;
+  transition: all .25s;
+}
+.fb.ok  { background: #e6f9e6; color: #2e7d32; }
+.fb.err { background: #fff0f0; color: #c0392b; }
+.countdown {
+  display: inline-block;
+  background: rgba(0,0,0,.12);
+  border-radius: 50px;
+  padding: 1px 8px;
+  font-size: .85em;
+  margin-left: 6px;
+}
+
+/* ══════════════════════════════════════════════════════
+   CONFETTI CANVAS  (sdílené)
+   ══════════════════════════════════════════════════════ */
+#cc, #confetti-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
 }
