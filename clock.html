@@ -612,12 +612,12 @@
 
       <!-- Toolbar -->
       <div class="prac-toolbar">
-        <select class="psel" id="sub" onchange="saveSett()">
+        <select class="psel" id="sub" onchange="saveSett(); newQ()">
           <option value="d2a" data-i18n-opt="subDA">Digitální → Analogové</option>
           <option value="a2d" data-i18n-opt="subAD">Analogové → Digitální</option>
           <option value="mix" data-i18n-opt="subMix">Mix</option>
         </select>
-        <select class="psel" id="dif" onchange="saveSett()">
+        <select class="psel" id="dif" onchange="saveSett(); newQ()">
           <option value="60"  data-i18n-opt="d1">Celé hodiny</option>
           <option value="30"  data-i18n-opt="d2">Půlhodiny</option>
           <option value="15"  data-i18n-opt="d3">Čtvrthodiny</option>
@@ -1138,11 +1138,22 @@ function doConfetti(){
 function updStars(){const e=document.getElementById('sc');e.textContent=S.stars;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop');}
 function switchTab(tab){
   if(autoTimer){clearInterval(autoTimer);autoTimer=null;}
+  
   document.getElementById('ml').classList.toggle('on',tab==='learn');
   document.getElementById('mp').classList.toggle('on',tab==='prac');
   document.getElementById('tab-learn').classList.toggle('on',tab==='learn');
   document.getElementById('tab-prac').classList.toggle('on',tab==='prac');
-  if(tab==='prac'){document.getElementById('prow').innerHTML='';const fb=document.getElementById('pfb');fb.className='fb';fb.textContent='';}
+  
+  if(tab==='prac'){
+    const prow = document.getElementById('prow');
+    // Pokud je oblast pro úkoly prázdná, rovnou vygeneruj novou úlohu
+    if (!prow.innerHTML.trim()) {
+        newQ();
+    }
+    const fb = document.getElementById('pfb');
+    fb.className = 'fb';
+    fb.textContent = '';
+  }
 }
 function applyLang(){
   const L=S.lang;
